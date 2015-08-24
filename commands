@@ -213,7 +213,7 @@ case "$1" in
     ADMIN_PORT_FILE="$SERVICE_ROOT/ADMIN_PORT"; ADMIN_DESTINATION_FILE="$SERVICE_ROOT/IPTABLES_ADMIN_DESTINATION"
 
     [[ -f "$PORT_FILE" ]] && PORT=$(cat "$PORT_FILE") && dokku_log_fail "Service $SERVICE already exposed on port $PORT"
-    [[ -f "$PORT_FILE" ]] && PORT=$(cat "$PORT_FILE") && dokku_log_fail "Service $SERVICE already exposed on port $PORT"
+    [[ -f "$ADMIN_PORT_FILE" ]] && PORT=$(cat "$ADMIN_PORT_FILE") && dokku_log_fail "Service $SERVICE admin already exposed on port $PORT"
 
     ID=$(cat "$SERVICE_ROOT/ID")
     IP=$(get_container_ip "$ID")
