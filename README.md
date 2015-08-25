@@ -11,7 +11,7 @@ Official rabbitmq plugin for dokku. Currently installs rabbitmq 3.5.4-management
 
 ```
 cd /var/lib/dokku/plugins
-git clone https://github.com/dokku/dokku-rabbitmq-plugin.git rabbitmq
+git clone https://github.com/dokku/dokku-rabbitmq.git rabbitmq
 dokku plugins-install-dependencies
 dokku plugins-install
 ```
