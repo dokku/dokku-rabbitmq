@@ -4,8 +4,8 @@ Official rabbitmq plugin for dokku. Currently installs rabbitmq 3.5.4-management
 
 ## requirements
 
-- dokku 0.3.25+
-- docker 1.6.x
+- dokku 0.4.0+
+- docker 1.8.x
 
 ## installation
 
