@@ -25,15 +25,16 @@ rabbitmq:connect <name>           NOT IMPLEMENTED
 rabbitmq:create <name>            Create a rabbitmq service
 rabbitmq:destroy <name>           Delete the service and stop its container if there are no links left
 rabbitmq:export <name>            NOT IMPLEMENTED
-rabbitmq:expose <name> <port>     NOT IMPLEMENTED
+rabbitmq:expose <name> [port]     Expose a rabbitmq service on custom port if provided (random port otherwise)
 rabbitmq:import <name> <file>     NOT IMPLEMENTED
 rabbitmq:info <name>              Print the connection information
 rabbitmq:link <name> <app>        Link the rabbitmq service to the app
 rabbitmq:list                     List all rabbitmq services
 rabbitmq:logs <name> [-t]         Print the most recent log(s) for this service
-rabbitmq:restart <name>           Graceful shutdown and restart of the service container
-rabbitmq:unexpose <name> <port>   NOT IMPLEMENTED
-rabbitmq:unlink <name> <app>      Unlink the rabbitmq service from the app
+rabbitmq:restart <name>           Graceful shutdown and restart of the rabbitmq service container
+rabbitmq:start <name>             Start a previously stopped rabbitmq service
+rabbitmq:stop <name>              Stop a running rabbitmq service
+rabbitmq:unexpose <name>          Unexpose a previously exposed rabbitmq service
 ```
 
 ## usage
@@ -65,7 +66,7 @@ dokku rabbitmq:link lolipop playground
 # the above will expose the following environment variables
 #
 #   RABBITMQ_URL=rabbitmq://172.17.0.1:5672
-#   RABBITMQ_NAME=/playground/DATABASE
+#   RABBITMQ_NAME=/lolipop/DATABASE
 #   RABBITMQ_PORT=tcp://172.17.0.1:5672
 #   RABBITMQ_PORT_5672_TCP=tcp://172.17.0.1:5672
 #   RABBITMQ_PORT_5672_TCP_PROTO=tcp
@@ -85,11 +86,10 @@ dokku rabbitmq:logs lolipop
 dokku rabbitmq:logs lolipop -t # to tail
 
 # finally, you can destroy the container
-dokku rabbitmq:destroy playground
+dokku rabbitmq:destroy lolipop
 ```
 
 ## todo
 
 - implement rabbitmq:clone
-- implement rabbitmq:expose
 - implement rabbitmq:import
