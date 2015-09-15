@@ -1,6 +1,6 @@
 # dokku rabbitmq (beta) [![Build Status](https://img.shields.io/travis/dokku/dokku-rabbitmq.svg?branch=master "Build Status")](https://travis-ci.org/dokku/dokku-rabbitmq) [![IRC Network](https://img.shields.io/badge/irc-freenode-blue.svg "IRC Freenode")](https://webchat.freenode.net/?channels=dokku)
 
-Official rabbitmq plugin for dokku. Currently installs [rabbitmq 3.5.4-management](https://hub.docker.com/_/rabbitmq/).
+Official rabbitmq plugin for dokku. Currently defaults to installing [rabbitmq 3.5.4-management](https://hub.docker.com/_/rabbitmq/).
 
 ## requirements
 
