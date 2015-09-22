@@ -9,11 +9,13 @@ Official rabbitmq plugin for dokku. Currently defaults to installing [rabbitmq 3
 
 ## installation
 
-```
+```shell
 cd /var/lib/dokku/plugins
 git clone https://github.com/dokku/dokku-rabbitmq.git rabbitmq
-dokku plugins-install-dependencies
 dokku plugins-install
+
+# on 0.4.x
+dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git rabbitmq
 ```
 
 ## commands
