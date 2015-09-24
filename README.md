@@ -75,6 +75,10 @@ dokku rabbitmq:link lolipop playground
 #   RABBITMQ_PORT_5672_TCP_PORT=5672
 #   RABBITMQ_PORT_5672_TCP_ADDR=172.17.0.1
 
+# you can examine the environment variables
+# using our 'playground' app's env command
+dokku run playground env
+
 # you can customize the environment
 # variables through a custom docker link alias
 dokku rabbitmq:alias lolipop RABBITMQ_DATABASE
