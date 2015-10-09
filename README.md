@@ -21,7 +21,6 @@ dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git rabbitmq
 ## commands
 
 ```
-rabbitmq:alias <name> <alias>     Set an alias for the docker link
 rabbitmq:clone <name> <new-name>  NOT IMPLEMENTED
 rabbitmq:connect <name>           NOT IMPLEMENTED
 rabbitmq:create <name>            Create a rabbitmq service
@@ -33,6 +32,7 @@ rabbitmq:info <name>              Print the connection information
 rabbitmq:link <name> <app>        Link the rabbitmq service to the app
 rabbitmq:list                     List all rabbitmq services
 rabbitmq:logs <name> [-t]         Print the most recent log(s) for this service
+rabbitmq:promote <name> <app>     Promote service <name> as RABBITMQ_URL in <app>
 rabbitmq:restart <name>           Graceful shutdown and restart of the rabbitmq service container
 rabbitmq:start <name>             Start a previously stopped rabbitmq service
 rabbitmq:stop <name>              Stop a running rabbitmq service
@@ -56,8 +56,6 @@ dokku rabbitmq:create lolipop
 # get connection information as follows
 dokku rabbitmq:info lolipop
 
-# lets assume the ip of our rabbitmq service is 172.17.0.1
-
 # a rabbitmq service can be linked to a
 # container this will use native docker
 # links via the docker-options plugin
@@ -67,25 +65,42 @@ dokku rabbitmq:link lolipop playground
 
 # the above will expose the following environment variables
 #
-#   RABBITMQ_URL=rabbitmq://172.17.0.1:5672
-#   RABBITMQ_NAME=/lolipop/DATABASE
-#   RABBITMQ_PORT=tcp://172.17.0.1:5672
-#   RABBITMQ_PORT_5672_TCP=tcp://172.17.0.1:5672
-#   RABBITMQ_PORT_5672_TCP_PROTO=tcp
-#   RABBITMQ_PORT_5672_TCP_PORT=5672
-#   RABBITMQ_PORT_5672_TCP_ADDR=172.17.0.1
+#   DOKKU_RABBITMQ_LOLIPOP_NAME=/lolipop/DATABASE
+#   DOKKU_RABBITMQ_LOLIPOP_PORT=tcp://172.17.0.1:5672
+#   DOKKU_RABBITMQ_LOLIPOP_PORT_5672_TCP=tcp://172.17.0.1:5672
+#   DOKKU_RABBITMQ_LOLIPOP_PORT_5672_TCP_PROTO=tcp
+#   DOKKU_RABBITMQ_LOLIPOP_PORT_5672_TCP_PORT=5672
+#   DOKKU_RABBITMQ_LOLIPOP_PORT_5672_TCP_ADDR=172.17.0.1
+#
+# and the following will be set on the linked application by default
+#
+#   RABBITMQ_URL=amqp://lolipop:SOME_PASSWORD@dokku-rabbitmq-lolipop:5672/lolipop
+#
+# NOTE: the host exposed here only works internally in docker containers. If
+# you want your container to be reachable from outside, you should use `expose`.
 
-# you can examine the environment variables
-# using our 'playground' app's env command
-dokku run playground env
+# another service can be linked to your app
+dokku rabbitmq:link other_service playground
 
-# you can customize the environment
-# variables through a custom docker link alias
-dokku rabbitmq:alias lolipop RABBITMQ_DATABASE
+# since DATABASE_URL is already in use, another environment variable will be
+# generated automatically
+#
+#   DOKKU_RABBITMQ_BLUE_URL=amqp://other_service:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
+
+# you can then promote the new service to be the primary one
+# NOTE: this will restart your app
+dokku rabbitmq:promote other_service playground
+
+# this will replace RABBITMQ_URL with the url from other_service and generate
+# another environment variable to hold the previous value if necessary.
+# you could end up with the following for example:
+#
+#   RABBITMQ_URL=amqp://other_service:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
+#   DOKKU_RABBITMQ_BLUE_URL=amqp://other_service:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
+#   DOKKU_RABBITMQ_SILVER_URL=amqp://lolipop:SOME_PASSWORD@dokku-rabbitmq-lolipop:5672/lolipop
 
 # you can also unlink a rabbitmq service
-# NOTE: this will restart your app
-dokku rabbitmq:unlink lolipop playground
+# NOTE: this will restart your app and unset related environment variables
 
 # you can tail logs for a particular service
 dokku rabbitmq:logs lolipop

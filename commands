@@ -16,13 +16,6 @@ if [[ $1 == $PLUGIN_COMMAND_PREFIX:* ]]; then
 fi
 
 case "$1" in
-  $PLUGIN_COMMAND_PREFIX:alias)
-    [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
-    [[ -z $3 ]] && dokku_log_fail "Please specify an alias for the service"
-    verify_service_name "$2"
-    service_set_alias "$2" "$3"
-    ;;
-
   $PLUGIN_COMMAND_PREFIX:create)
     [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
     [[ ! -d "$PLUGIN_DATA_ROOT/$2" ]] || dokku_log_fail "$PLUGIN_SERVICE service $2 already exists"
@@ -33,13 +26,14 @@ case "$1" in
     fi
 
     mkdir -p "$SERVICE_ROOT" || dokku_log_fail "Unable to create service directory"
-    password=$(date +%s | sha256sum | base64 | head -c 16)
+    mkdir -p "$SERVICE_ROOT/data" || dokku_log_fail "Unable to create service data directory"
+    password=$(openssl rand -hex 16)
     echo "$password" > "$SERVICE_ROOT/PASSWORD"
     touch "$LINKS_FILE"
 
     dokku_log_info1 "Starting container"
     SERVICE_NAME=$(get_service_name "$SERVICE")
-    ID=$(docker run --name "$SERVICE_NAME" --hostname $SERVICE -e RABBITMQ_DEFAULT_USER=$SERVICE -e RABBITMQ_DEFAULT_PASS=$password -e RABBITMQ_DEFAULT_VHOST=$SERVICE -d --restart always --label dokku=service --label dokku.service=rabbitmq "$PLUGIN_IMAGE:$PLUGIN_IMAGE_VERSION")
+    ID=$(docker run --name "$SERVICE_NAME" -v "$SERVICE_ROOT/data:/var/lib/rabbitmq" --hostname $SERVICE -e RABBITMQ_DEFAULT_USER=$SERVICE -e RABBITMQ_DEFAULT_PASS=$password -e RABBITMQ_DEFAULT_VHOST=$SERVICE -d --restart always --label dokku=service --label dokku.service=rabbitmq "$PLUGIN_IMAGE:$PLUGIN_IMAGE_VERSION")
     echo "$ID" > "$SERVICE_ROOT/ID"
 
     dokku_log_verbose_quiet "Waiting for container to be ready"
@@ -186,9 +180,16 @@ case "$1" in
     service_port_unexpose "$2"
     ;;
 
+  $PLUGIN_COMMAND_PREFIX:promote)
+    [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
+    [[ -z $3 ]] && dokku_log_fail "Please specify an app to run the command on"
+    verify_service_name "$2"
+    verify_app_name "$3"
+    promote "$2" "$3"
+    ;;
+
   help | $PLUGIN_COMMAND_PREFIX:help)
     HELP=$(cat<<EOF
-    $PLUGIN_COMMAND_PREFIX:alias <name> <alias>, Set an alias for the docker link
     $PLUGIN_COMMAND_PREFIX:create <name>, Create a $PLUGIN_SERVICE service
     $PLUGIN_COMMAND_PREFIX:destroy <name>, Delete the $PLUGIN_SERVICE service and stop its container if there are no links left
     $PLUGIN_COMMAND_PREFIX:link <name> <app>, Link the $PLUGIN_SERVICE service to the app
@@ -205,6 +206,7 @@ case "$1" in
     $PLUGIN_COMMAND_PREFIX:unexpose <name>, Unexpose a previously exposed $PLUGIN_SERVICE service
     $PLUGIN_COMMAND_PREFIX:start <name>, Start a previously stopped $PLUGIN_SERVICE service
     $PLUGIN_COMMAND_PREFIX:stop <name>, Stop a running $PLUGIN_SERVICE service
+    $PLUGIN_COMMAND_PREFIX:promote <name> <app>, Promote service <name> as ${PLUGIN_DEFAULT_ALIAS}_URL in <app>
 EOF
 )
     if [[ -n $DOKKU_API_VERSION ]]; then
