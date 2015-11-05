@@ -23,7 +23,7 @@ dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git rabbitmq
 ```
 rabbitmq:clone <name> <new-name>  NOT IMPLEMENTED
 rabbitmq:connect <name>           NOT IMPLEMENTED
-rabbitmq:create <name>            Create a rabbitmq service
+rabbitmq:create <name>            Create a rabbitmq service with environment variables
 rabbitmq:destroy <name>           Delete the service and stop its container if there are no links left
 rabbitmq:export <name> > <file>   NOT IMPLEMENTED
 rabbitmq:expose <name> [port]     Expose a rabbitmq service on custom port if provided (random port otherwise)
@@ -51,6 +51,13 @@ dokku rabbitmq:create lolipop
 # official rabbitmq image
 export RABBITMQ_IMAGE="rabbitmq"
 export RABBITMQ_IMAGE_VERSION="3.5"
+
+# you can also specify custom environment
+# variables to start the rabbitmq service
+# in semi-colon separated forma
+export RABBITMQ_CUSTOM_ENV="USER=alpha;HOST=beta"
+
+# create a rabbitmq service
 dokku rabbitmq:create lolipop
 
 # get connection information as follows
