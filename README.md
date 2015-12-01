@@ -37,6 +37,7 @@ rabbitmq:restart <name>           Graceful shutdown and restart of the rabbitmq 
 rabbitmq:start <name>             Start a previously stopped rabbitmq service
 rabbitmq:stop <name>              Stop a running rabbitmq service
 rabbitmq:unexpose <name>          Unexpose a previously exposed rabbitmq service
+rabbitmq:unlink <name> <app>      Unlink the rabbitmq service from the app
 ```
 
 ## usage
