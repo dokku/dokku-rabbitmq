@@ -83,7 +83,7 @@ dokku rabbitmq:delete-vhost vhost
 
 # set permissions
 # * need to be escaped
-rabbitmq:set-permissions rabbit1 vhost username ".\*" ".\*" ".\*"
+rabbitmq:set-permissions lolipop vhost username ".\*" ".\*" ".\*"
  
 # a rabbitmq service can be linked to a
 # container this will use native docker
