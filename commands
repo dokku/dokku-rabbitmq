@@ -89,6 +89,90 @@ case "$1" in
     dokku_log_info2 "$PLUGIN_SERVICE container deleted: $SERVICE"
     ;;
 
+
+  $PLUGIN_COMMAND_PREFIX:create-user)
+    [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
+    [[ -z $3 ]] && dokku_log_fail "Please specify user"
+    [[ -z $4 ]] && dokku_log_fail "Please specify password"
+    verify_service_name "$2"
+
+    SERVICE="$2"
+    SERVICE_NAME=$(get_service_name "$SERVICE")
+    USERNAME="$3"
+    PASSWORD="$4"
+    
+    docker exec "$SERVICE_NAME" rabbitmqctl add_user $USERNAME $PASSWORD > /dev/null
+
+    dokku_log_info1 "$PLUGIN_SERVICE added user: $USERNAME with password: $PASSWORD"
+    ;;
+
+  $PLUGIN_COMMAND_PREFIX:delete-user)
+    [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
+    [[ -z $3 ]] && dokku_log_fail "Please specify user"
+    [[ -z $4 ]] && dokku_log_fail "Please specify password"
+    verify_service_name "$2"
+
+    SERVICE="$2"
+    SERVICE_NAME=$(get_service_name "$SERVICE")
+    USERNAME="$3"
+    PASSWORD="$4"
+    
+    docker exec "$SERVICE_NAME" rabbitmqctl delete_user $USERNAME > /dev/null
+
+    dokku_log_info1 "$PLUGIN_SERVICE deleted user: $USERNAME"
+    ;;
+
+  $PLUGIN_COMMAND_PREFIX:add-vhost)
+    [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
+    [[ -z $3 ]] && dokku_log_fail "Please specify vhost"
+    verify_service_name "$2"
+
+    SERVICE="$2"
+    SERVICE_NAME=$(get_service_name "$SERVICE")
+    VHOST="$3"
+    
+    docker exec "$SERVICE_NAME" rabbitmqctl add_vhost $VHOST > /dev/null
+
+    dokku_log_info1 "$PLUGIN_SERVICE added vhost: $VHOST"
+    ;;
+
+  $PLUGIN_COMMAND_PREFIX:delete-vhost)
+    [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
+    [[ -z $3 ]] && dokku_log_fail "Please specify vhost"
+    verify_service_name "$2"
+
+    SERVICE="$2"
+    SERVICE_NAME=$(get_service_name "$SERVICE")
+    VHOST="$3"
+    
+    docker exec "$SERVICE_NAME" rabbitmqctl add_vhost $VHOST > /dev/null
+
+    dokku_log_info1 "$PLUGIN_SERVICE deleted vhost: $VHOST"
+    ;;
+
+  $PLUGIN_COMMAND_PREFIX:set-permissions)
+    [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
+    [[ -z $3 ]] && dokku_log_fail "Please specify vhost"
+    [[ -z $4 ]] && dokku_log_fail "Please specify user"
+    [[ -z $5 ]] && dokku_log_fail "Please specify conf"
+    [[ -z $6 ]] && dokku_log_fail "Please specify write"
+    [[ -z $7 ]] && dokku_log_fail "Please specify read"
+
+    
+    verify_service_name "$2"
+
+    SERVICE="$2"
+    SERVICE_NAME=$(get_service_name "$SERVICE")
+    VHOST="$3"
+    USERNAME="$4"
+    CONFIG="$5"
+    WRITE="$6"
+    READ="$7"
+
+    docker exec "$SERVICE_NAME" rabbitmqctl set_permissions -p $VHOST $USERNAME "$CONFIG" "$WRITE" "$READ" > /dev/null
+    dokku_log_info1 "$PLUGIN_SERVICE set permissions $CONFIG $WRITE $READ for $VHOST to $USERNAME"
+    ;;
+
   $PLUGIN_COMMAND_PREFIX:link)
     [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
     [[ -z $3 ]] && dokku_log_fail "Please specify an app to run the command on"
@@ -196,6 +280,11 @@ case "$1" in
   help | $PLUGIN_COMMAND_PREFIX:help)
     HELP=$(cat<<EOF
     $PLUGIN_COMMAND_PREFIX:create <name>, Create a $PLUGIN_SERVICE service
+    $PLUGIN_COMMAND_PREFIX:create-user <name> <username> <password>, Create a $PLUGIN_SERVICE user
+    $PLUGIN_COMMAND_PREFIX:delete-user <name> <username>, Delete a $PLUGIN_SERVICE user
+    $PLUGIN_COMMAND_PREFIX:add-vhost <name> <vhost>, Create a $PLUGIN_SERVICE vhost
+    $PLUGIN_COMMAND_PREFIX:delete-vhost <name> <vhost>, Delete a $PLUGIN_SERVICE vhost
+    $PLUGIN_COMMAND_PREFIX:set-permissions <name> <vhost> <username> <config>, Sets a $PLUGIN_SERVICE permissions for vhost
     $PLUGIN_COMMAND_PREFIX:destroy <name>, Delete the $PLUGIN_SERVICE service and stop its container if there are no links left
     $PLUGIN_COMMAND_PREFIX:link <name> <app>, Link the $PLUGIN_SERVICE service to the app
     $PLUGIN_COMMAND_PREFIX:unlink <name> <app>, Unlink the $PLUGIN_SERVICE service from the app
