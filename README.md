@@ -70,16 +70,16 @@ dokku rabbitmq:create lolipop
 dokku rabbitmq:info lolipop
 
 # create user
-dokku rabbitmq:create-user username
+dokku rabbitmq:create-user lolipop username
 
 # delete user
-dokku rabbitmq:delete-user username
+dokku rabbitmq:delete-user lolipop username
 
 # add vhost
-dokku rabbitmq:add-vhost vhost
+dokku rabbitmq:add-vhost lolipop vhost
 
 # delete vhost
-dokku rabbitmq:delete-vhost vhost
+dokku rabbitmq:delete-vhost lolipop vhost
 
 # set permissions
 # * need to be escaped
