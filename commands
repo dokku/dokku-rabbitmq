@@ -158,7 +158,7 @@ case "$1" in
     [[ -z $6 ]] && dokku_log_fail "Please specify write"
     [[ -z $7 ]] && dokku_log_fail "Please specify read"
 
-    
+
     verify_service_name "$2"
 
     SERVICE="$2"
@@ -284,7 +284,7 @@ case "$1" in
     $PLUGIN_COMMAND_PREFIX:delete-user <name> <username>, Delete a $PLUGIN_SERVICE user
     $PLUGIN_COMMAND_PREFIX:add-vhost <name> <vhost>, Create a $PLUGIN_SERVICE vhost
     $PLUGIN_COMMAND_PREFIX:delete-vhost <name> <vhost>, Delete a $PLUGIN_SERVICE vhost
-    $PLUGIN_COMMAND_PREFIX:set-permissions <name> <vhost> <username> <config>, Sets a $PLUGIN_SERVICE permissions for vhost
+    $PLUGIN_COMMAND_PREFIX:set-permissions <name> <vhost> <username> <conf> <write> <read>, Sets a $PLUGIN_SERVICE permissions for vhost
     $PLUGIN_COMMAND_PREFIX:destroy <name>, Delete the $PLUGIN_SERVICE service and stop its container if there are no links left
     $PLUGIN_COMMAND_PREFIX:link <name> <app>, Link the $PLUGIN_SERVICE service to the app
     $PLUGIN_COMMAND_PREFIX:unlink <name> <app>, Unlink the $PLUGIN_SERVICE service from the app

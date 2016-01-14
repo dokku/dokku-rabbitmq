@@ -21,23 +21,28 @@ dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git rabbitmq
 ## commands
 
 ```
-rabbitmq:clone <name> <new-name>  NOT IMPLEMENTED
-rabbitmq:connect <name>           NOT IMPLEMENTED
-rabbitmq:create <name>            Create a rabbitmq service with environment variables
-rabbitmq:destroy <name>           Delete the service and stop its container if there are no links left
-rabbitmq:export <name> > <file>   NOT IMPLEMENTED
-rabbitmq:expose <name> [port]     Expose a rabbitmq service on custom port if provided (random port otherwise)
-rabbitmq:import <name> <file>     NOT IMPLEMENTED
-rabbitmq:info <name>              Print the connection information
-rabbitmq:link <name> <app>        Link the rabbitmq service to the app
-rabbitmq:list                     List all rabbitmq services
-rabbitmq:logs <name> [-t]         Print the most recent log(s) for this service
-rabbitmq:promote <name> <app>     Promote service <name> as RABBITMQ_URL in <app>
-rabbitmq:restart <name>           Graceful shutdown and restart of the rabbitmq service container
-rabbitmq:start <name>             Start a previously stopped rabbitmq service
-rabbitmq:stop <name>              Stop a running rabbitmq service
-rabbitmq:unexpose <name>          Unexpose a previously exposed rabbitmq service
-rabbitmq:unlink <name> <app>      Unlink the rabbitmq service from the app
+rabbitmq:create <name>, Create a RabbitMQ service
+rabbitmq:create-user <name> <username> <password>, Create a RabbitMQ user
+rabbitmq:delete-user <name> <username>, Delete a RabbitMQ user
+rabbitmq:add-vhost <name> <vhost>, Create a RabbitMQ vhost
+rabbitmq:delete-vhost <name> <vhost>, Delete a RabbitMQ vhost
+rabbitmq:set-permissions <name> <vhost> <username> <conf> <write> <read>, Sets a RabbitMQ permissions for vhost
+rabbitmq:destroy <name>, Delete the RabbitMQ service and stop its container if there are no links left
+rabbitmq:link <name> <app>, Link the RabbitMQ service to the app
+rabbitmq:unlink <name> <app>, Unlink the RabbitMQ service from the app
+rabbitmq:export <name>, NOT IMPLEMENTED
+rabbitmq:import <name> <file>, NOT IMPLEMENTED
+rabbitmq:connect <name>, NOT IMPLEMENTED
+rabbitmq:logs <name> [-t], Print the most recent log(s) for this service
+rabbitmq:restart <name>, Graceful shutdown and restart of the RabbitMQ service container
+rabbitmq:info <name>, Print the connection information
+rabbitmq:list, List all RabbitMQ services
+rabbitmq:clone <name> <new-name>, NOT IMPLEMENTED
+rabbitmq:expose <name> [port], Expose a RabbitMQ service on custom port if provided (random port otherwise)
+rabbitmq:unexpose <name>, Unexpose a previously exposed RabbitMQ service
+rabbitmq:start <name>, Start a previously stopped RabbitMQ service
+rabbitmq:stop <name>, Stop a running RabbitMQ service
+rabbitmq:promote <name> <app>, Promote service <name> as RABBITMQ_URL in <app>
 ```
 
 ## usage
@@ -64,6 +69,22 @@ dokku rabbitmq:create lolipop
 # get connection information as follows
 dokku rabbitmq:info lolipop
 
+# create user
+dokku rabbitmq:create-user username
+
+# delete user
+dokku rabbitmq:delete-user username
+
+# add vhost
+dokku rabbitmq:add-vhost vhost
+
+# delete vhost
+dokku rabbitmq:delete-vhost vhost
+
+# set permissions
+# * need to be escaped
+rabbitmq:set-permissions rabbit1 vhost username ".\*" ".\*" ".\*"
+ 
 # a rabbitmq service can be linked to a
 # container this will use native docker
 # links via the docker-options plugin
