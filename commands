@@ -118,7 +118,7 @@ case "$1" in
     dokku_log_info1 "$PLUGIN_SERVICE deleted user: $USERNAME"
     ;;
 
-  $PLUGIN_COMMAND_PREFIX:add-vhost)
+  $PLUGIN_COMMAND_PREFIX:create-vhost)
     [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
     [[ -z $3 ]] && dokku_log_fail "Please specify vhost"
     verify_service_name "$2"

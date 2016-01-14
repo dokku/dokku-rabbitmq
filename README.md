@@ -21,11 +21,11 @@ dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git rabbitmq
 ## commands
 
 ```
-rabbitmq:add-vhost <name> <vhost> 					 						Create a RabbitMQ vhost
 rabbitmq:clone <name> <new-name>											NOT IMPLEMENTED
 rabbitmq:connect <name>														NOT IMPLEMENTED
 rabbitmq:create <name>								 						Create a RabbitMQ service
 rabbitmq:create-user <name> <username> <password>	 						Create a RabbitMQ user
+rabbitmq:create-vhost <name> <vhost> 					 					Create a RabbitMQ vhost
 rabbitmq:destroy <name>														Delete the RabbitMQ service and stop its container if there are no links left
 rabbitmq:delete-user <name> <username>				 						Delete a RabbitMQ user
 rabbitmq:delete-vhost <name> <vhost>										Delete a RabbitMQ vhost
