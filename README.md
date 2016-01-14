@@ -76,7 +76,7 @@ dokku rabbitmq:create-user lolipop username password
 dokku rabbitmq:delete-user lolipop username
 
 # add vhost
-dokku rabbitmq:add-vhost lolipop vhost
+dokku rabbitmq:create-vhost lolipop vhost
 
 # delete vhost
 dokku rabbitmq:delete-vhost lolipop vhost
