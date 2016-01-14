@@ -275,7 +275,7 @@ case "$1" in
     $PLUGIN_COMMAND_PREFIX:create <name>, Create a $PLUGIN_SERVICE service
     $PLUGIN_COMMAND_PREFIX:create-user <name> <username> <password>, Create a $PLUGIN_SERVICE user
     $PLUGIN_COMMAND_PREFIX:delete-user <name> <username>, Delete a $PLUGIN_SERVICE user
-    $PLUGIN_COMMAND_PREFIX:add-vhost <name> <vhost>, Create a $PLUGIN_SERVICE vhost
+    $PLUGIN_COMMAND_PREFIX:create-vhost <name> <vhost>, Create a $PLUGIN_SERVICE vhost
     $PLUGIN_COMMAND_PREFIX:delete-vhost <name> <vhost>, Delete a $PLUGIN_SERVICE vhost
     $PLUGIN_COMMAND_PREFIX:set-permissions <name> <vhost> <username> <conf> <write> <read>, Sets a $PLUGIN_SERVICE permissions for vhost
     $PLUGIN_COMMAND_PREFIX:destroy <name>, Delete the $PLUGIN_SERVICE service and stop its container if there are no links left
