@@ -102,23 +102,19 @@ case "$1" in
     PASSWORD="$4"
     
     docker exec "$SERVICE_NAME" rabbitmqctl add_user $USERNAME $PASSWORD > /dev/null
-
-    dokku_log_info1 "$PLUGIN_SERVICE added user: $USERNAME with password: $PASSWORD"
+    dokku_log_info1 "$PLUGIN_SERVICE added user: $USERNAME password: $PASSWORD"
     ;;
 
   $PLUGIN_COMMAND_PREFIX:delete-user)
     [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
     [[ -z $3 ]] && dokku_log_fail "Please specify user"
-    [[ -z $4 ]] && dokku_log_fail "Please specify password"
     verify_service_name "$2"
 
     SERVICE="$2"
     SERVICE_NAME=$(get_service_name "$SERVICE")
     USERNAME="$3"
-    PASSWORD="$4"
     
     docker exec "$SERVICE_NAME" rabbitmqctl delete_user $USERNAME > /dev/null
-
     dokku_log_info1 "$PLUGIN_SERVICE deleted user: $USERNAME"
     ;;
 
@@ -132,7 +128,6 @@ case "$1" in
     VHOST="$3"
     
     docker exec "$SERVICE_NAME" rabbitmqctl add_vhost $VHOST > /dev/null
-
     dokku_log_info1 "$PLUGIN_SERVICE added vhost: $VHOST"
     ;;
 
@@ -145,19 +140,17 @@ case "$1" in
     SERVICE_NAME=$(get_service_name "$SERVICE")
     VHOST="$3"
     
-    docker exec "$SERVICE_NAME" rabbitmqctl add_vhost $VHOST > /dev/null
-
+    docker exec "$SERVICE_NAME" rabbitmqctl delete_vhost $VHOST > /dev/null
     dokku_log_info1 "$PLUGIN_SERVICE deleted vhost: $VHOST"
     ;;
 
   $PLUGIN_COMMAND_PREFIX:set-permissions)
     [[ -z $2 ]] && dokku_log_fail "Please specify a name for the service"
-    [[ -z $3 ]] && dokku_log_fail "Please specify vhost"
+    [[ -z $3 ]] && dokku_log_fail "Please specify a vhost"
     [[ -z $4 ]] && dokku_log_fail "Please specify user"
     [[ -z $5 ]] && dokku_log_fail "Please specify conf"
     [[ -z $6 ]] && dokku_log_fail "Please specify write"
     [[ -z $7 ]] && dokku_log_fail "Please specify read"
-
 
     verify_service_name "$2"
 
