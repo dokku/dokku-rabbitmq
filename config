@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 export RABBITMQ_IMAGE=${RABBITMQ_IMAGE:="rabbitmq"}
-export RABBITMQ_IMAGE_VERSION=${RABBITMQ_IMAGE_VERSION:="3.5.4-management"}
+export RABBITMQ_IMAGE_VERSION=${RABBITMQ_IMAGE_VERSION:="3.6.0-management"}
 export RABBITMQ_ROOT=${RABBITMQ_ROOT:="/var/lib/dokku/services/rabbitmq"}
 
 export PLUGIN_COMMAND_PREFIX="rabbitmq"
