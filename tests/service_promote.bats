@@ -53,3 +53,10 @@ teardown() {
   run dokku config my_app
   assert_contains "${lines[*]}" "DOKKU_RABBITMQ_"
 }
+@test "($PLUGIN_COMMAND_PREFIX:promote) uses RABBITMQ_DATABASE_SCHEME variable" {
+  password="$(cat "$PLUGIN_DATA_ROOT/l/PASSWORD")"
+  dokku config:set my_app "RABBITMQ_DATABASE_SCHEME=amqp2" "RABBITMQ_URL=amqp://u:p@host:5672/db" "DOKKU_RABBITMQ_BLUE_URL=amqp2://l:$password@dokku-rabbitmq-l:5672/l"
+  dokku "$PLUGIN_COMMAND_PREFIX:promote" l my_app
+  url=$(dokku config:get my_app RABBITMQ_URL)
+  assert_contains "$url" "amqp2://l:$password@dokku-rabbitmq-l:5672/l"
+}
