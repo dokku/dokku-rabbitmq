@@ -59,3 +59,12 @@ teardown() {
   assert_contains "${lines[*]}" "--link dokku.rabbitmq.l:dokku-rabbitmq-l"
   dokku "$PLUGIN_COMMAND_PREFIX:unlink" l my_app
 }
+
+@test "($PLUGIN_COMMAND_PREFIX:link) uses apps RABBITMQ_DATABASE_SCHEME variable" {
+  dokku config:set my_app RABBITMQ_DATABASE_SCHEME=amqp2
+  dokku "$PLUGIN_COMMAND_PREFIX:link" l my_app
+  url=$(dokku config:get my_app RABBITMQ_URL)
+  password="$(cat "$PLUGIN_DATA_ROOT/l/PASSWORD")"
+  assert_contains "$url" "amqp2://l:$password@dokku-rabbitmq-l:5672/l"
+  dokku "$PLUGIN_COMMAND_PREFIX:unlink" l my_app
+}

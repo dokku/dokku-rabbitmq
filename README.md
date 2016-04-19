@@ -119,6 +119,33 @@ dokku rabbitmq:logs lolipop -t # to tail
 dokku rabbitmq:destroy lolipop
 ```
 
+## Changing database adapter
+
+It's possible to change the protocol for DATABASE_URL by setting
+the environment variable RABBITMQ_DATABASE_SCHEME on the app:
+
+```
+dokku config:set playground RABBITMQ_DATABASE_SCHEME=amqp2
+dokku rabbitmq:link lolipop playground
+```
+
+Will cause RABBITMQ_URL to be set as
+amqp2://dokku-rabbitmq-other-service:5672/0
+
+CAUTION: Changing RABBITMQ_DATABASE_SCHEME after linking will cause dokku to
+believe the rabbitmq is not linked when attempting to use `dokku rabbitmq:unlink`
+or `dokku rabbitmq:promote`.
+You should be able to fix this by
+
+- Changing RABBITMQ_URL manually to the new value.
+
+OR
+
+- Set RABBITMQ_DATABASE_SCHEME back to its original setting
+- Unlink the service
+- Change RABBITMQ_DATABASE_SCHEME to the desired setting
+- Relink the service
+
 ## todo
 
 - implement rabbitmq:clone
