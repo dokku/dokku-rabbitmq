@@ -4,17 +4,13 @@ Official rabbitmq plugin for dokku. Currently defaults to installing [rabbitmq 3
 
 ## requirements
 
-- dokku 0.4.0+
+- dokku 0.4.x+
 - docker 1.8.x
 
 ## installation
 
 ```shell
-cd /var/lib/dokku/plugins
-git clone https://github.com/dokku/dokku-rabbitmq.git rabbitmq
-dokku plugins-install
-
-# on 0.4.x
+# on 0.4.x+
 dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git rabbitmq
 ```
 
