@@ -11,8 +11,7 @@ rabbitmq-import-cmd() {
 
   [[ -z "$SERVICE" ]] && dokku_log_fail "Please specify a name for the service"
   verify_service_name "$SERVICE"
-
-  dokku_log_fail "Not yet implemented"
+  service_import "$SERVICE"
 }
 
 rabbitmq-import-cmd "$@"
