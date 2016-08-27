@@ -383,7 +383,7 @@ service_create_container() {
   local SERVICE="$1"
   local SERVICE_ROOT="$PLUGIN_DATA_ROOT/$SERVICE"
   local SERVICE_NAME="$(get_service_name "$SERVICE")"
-  local PASSWORD=$(cat "$SERVICE_ROOT/PASSWORD")
+  local PASSWORD="$(cat "$SERVICE_ROOT/PASSWORD")"
 
   ID=$(docker run --name "$SERVICE_NAME" -v "$SERVICE_ROOT/data:/var/lib/rabbitmq" --hostname "$SERVICE" -e "RABBITMQ_DEFAULT_USER=$SERVICE" -e "RABBITMQ_DEFAULT_PASS=$PASSWORD" -e "RABBITMQ_DEFAULT_VHOST=$SERVICE" --env-file="$SERVICE_ROOT/ENV" -d --restart always --label dokku=service --label dokku.service=rabbitmq "$PLUGIN_IMAGE:$PLUGIN_IMAGE_VERSION")
   echo "$ID" > "$SERVICE_ROOT/ID"
@@ -422,7 +422,7 @@ service_start() {
   dokku_log_info1_quiet "Starting container"
   local PREVIOUS_ID=$(docker ps -f status=exited | grep -e "$SERVICE_NAME$" | awk '{print $1}') || true
   local IMAGE_EXISTS=$(docker images | grep -e "^$PLUGIN_IMAGE " | grep -q " $PLUGIN_IMAGE_VERSION " && true)
-  local PASSWORD=$(cat "$SERVICE_ROOT/PASSWORD")
+  local PASSWORD="$(cat "$SERVICE_ROOT/PASSWORD")"
 
   if [[ -n $PREVIOUS_ID ]]; then
     docker start "$PREVIOUS_ID" > /dev/null
