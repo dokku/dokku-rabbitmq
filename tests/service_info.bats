@@ -21,14 +21,46 @@ teardown() {
 
 @test "($PLUGIN_COMMAND_PREFIX:info) success" {
   run dokku "$PLUGIN_COMMAND_PREFIX:info" l
-  password="$(cat "$PLUGIN_DATA_ROOT/l/PASSWORD")"
-  assert_contains "${lines[*]}" "DSN: amqp://l:$password@dokku-rabbitmq-l:5672/l"
+  local password="$(cat "$PLUGIN_DATA_ROOT/l/PASSWORD")"
+  assert_contains "${lines[*]}" "amqp://l:$password@dokku-rabbitmq-l:5672/l"
 }
 
 @test "($PLUGIN_COMMAND_PREFIX:info) replaces underscores by dash in hostname" {
   dokku "$PLUGIN_COMMAND_PREFIX:create" test_with_underscores
   run dokku "$PLUGIN_COMMAND_PREFIX:info" test_with_underscores
-  password="$(cat "$PLUGIN_DATA_ROOT/test_with_underscores/PASSWORD")"
-  assert_contains "${lines[*]}" "DSN: amqp://test_with_underscores:$password@dokku-rabbitmq-test-with-underscores:5672/test_with_underscores"
+  local password="$(cat "$PLUGIN_DATA_ROOT/test_with_underscores/PASSWORD")"
+  assert_contains "${lines[*]}" "amqp://test_with_underscores:$password@dokku-rabbitmq-test-with-underscores:5672/test_with_underscores"
   dokku --force "$PLUGIN_COMMAND_PREFIX:destroy" test_with_underscores
+}
+
+@test "($PLUGIN_COMMAND_PREFIX:info) success with flag" {
+  run dokku "$PLUGIN_COMMAND_PREFIX:info" l --dsn
+  local password="$(cat "$PLUGIN_DATA_ROOT/l/PASSWORD")"
+  assert_output "amqp://l:$password@dokku-rabbitmq-l:5672/l"
+
+  run dokku "$PLUGIN_COMMAND_PREFIX:info" l --config-dir
+  assert_success
+
+  run dokku "$PLUGIN_COMMAND_PREFIX:info" l --data-dir
+  assert_success
+
+  run dokku "$PLUGIN_COMMAND_PREFIX:info" l --dsn
+  assert_success
+
+  run dokku "$PLUGIN_COMMAND_PREFIX:info" l --exposed-ports
+  assert_success
+
+  run dokku "$PLUGIN_COMMAND_PREFIX:info" l --links
+  assert_success
+
+  run dokku "$PLUGIN_COMMAND_PREFIX:info" l --status
+  assert_success
+
+  run dokku "$PLUGIN_COMMAND_PREFIX:info" l --version
+  assert_success
+}
+
+@test "($PLUGIN_COMMAND_PREFIX:info) error when invalid flag" {
+  run dokku "$PLUGIN_COMMAND_PREFIX:info" l --invalid-flag
+  assert_failure
 }

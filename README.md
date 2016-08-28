@@ -48,17 +48,25 @@ dokku rabbitmq:create lolipop
 # official rabbitmq image
 export RABBITMQ_IMAGE="rabbitmq"
 export RABBITMQ_IMAGE_VERSION="3.5"
+dokku rabbitmq:create lolipop
 
 # you can also specify custom environment
 # variables to start the rabbitmq service
 # in semi-colon separated forma
 export RABBITMQ_CUSTOM_ENV="USER=alpha;HOST=beta"
-
-# create a rabbitmq service
 dokku rabbitmq:create lolipop
 
 # get connection information as follows
 dokku rabbitmq:info lolipop
+
+# you can also retrieve a specific piece of service info via flags
+dokku rabbitmq:info lolipop --config-dir
+dokku rabbitmq:info lolipop --data-dir
+dokku rabbitmq:info lolipop --dsn
+dokku rabbitmq:info lolipop --exposed-ports
+dokku rabbitmq:info lolipop --links
+dokku rabbitmq:info lolipop --status
+dokku rabbitmq:info lolipop --version
 
 # a rabbitmq service can be linked to a
 # container this will use native docker
