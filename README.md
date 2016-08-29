@@ -65,6 +65,7 @@ dokku rabbitmq:info lolipop --data-dir
 dokku rabbitmq:info lolipop --dsn
 dokku rabbitmq:info lolipop --exposed-ports
 dokku rabbitmq:info lolipop --id
+dokku rabbitmq:info lolipop --internal-ip
 dokku rabbitmq:info lolipop --links
 dokku rabbitmq:info lolipop --status
 dokku rabbitmq:info lolipop --version
