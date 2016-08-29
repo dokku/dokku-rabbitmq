@@ -21,6 +21,7 @@ rabbitmq:clone <name> <new-name>  NOT IMPLEMENTED
 rabbitmq:connect <name>           NOT IMPLEMENTED
 rabbitmq:create <name>            Create a rabbitmq service with environment variables
 rabbitmq:destroy <name>           Delete the service and stop its container if there are no links left
+rabbitmq:enter <name> [command]   Enter a running couchdb service or run a command
 rabbitmq:export <name> > <file>   NOT IMPLEMENTED
 rabbitmq:expose <name> [port]     Expose a rabbitmq service on custom port if provided (random port otherwise)
 rabbitmq:import <name> <file>     NOT IMPLEMENTED
@@ -70,6 +71,14 @@ dokku rabbitmq:info lolipop --links
 dokku rabbitmq:info lolipop --service-root
 dokku rabbitmq:info lolipop --status
 dokku rabbitmq:info lolipop --version
+
+# a bash prompt can be opened against a running service
+# filesystem changes will not be saved to disk
+dokku rabbitmq:enter lolipop
+
+# you may also run a command directly against the service
+# filesystem changes will not be saved to disk
+dokku rabbitmq:enter lolipop ls -lah /
 
 # a rabbitmq service can be linked to a
 # container this will use native docker
