@@ -17,6 +17,11 @@ sudo dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git rabbitmq
 ## commands
 
 ```
+rabbitmq:backup <name> <bucket>   NOT IMPLEMENTED
+rabbitmq:backup-auth <name> <aws_access_key_id> <aws_secret_access_key> NOT IMPLEMENTED
+rabbitmq:backup-deauth <name>     NOT IMPLEMENTED
+rabbitmq:backup-schedule <name> <schedule> <bucket> NOT IMPLEMENTED
+rabbitmq:backup-unschedule <name> NOT IMPLEMENTED
 rabbitmq:clone <name> <new-name>  NOT IMPLEMENTED
 rabbitmq:connect <name>           NOT IMPLEMENTED
 rabbitmq:create <name>            Create a rabbitmq service with environment variables
