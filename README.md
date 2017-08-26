@@ -166,8 +166,3 @@ OR
 - Unlink the service
 - Change RABBITMQ_DATABASE_SCHEME to the desired setting
 - Relink the service
-
-## todo
-
-- implement rabbitmq:clone
-- implement rabbitmq:import
