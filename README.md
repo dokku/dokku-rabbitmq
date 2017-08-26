@@ -25,7 +25,7 @@ rabbitmq:backup-unschedule <name> NOT IMPLEMENTED
 rabbitmq:clone <name> <new-name>  NOT IMPLEMENTED
 rabbitmq:connect <name>           NOT IMPLEMENTED
 rabbitmq:create <name>            Create a rabbitmq service with environment variables
-rabbitmq:destroy <name>           Delete the service and stop its container if there are no links left
+rabbitmq:destroy <name>           Delete the service, delete the data and stop its container if there are no links left
 rabbitmq:enter <name> [command]   Enter or run a command in a running rabbitmq service container
 rabbitmq:export <name> > <file>   NOT IMPLEMENTED
 rabbitmq:expose <name> [port]     Expose a rabbitmq service on custom port if provided (random port otherwise)
