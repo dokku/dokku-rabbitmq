@@ -29,11 +29,13 @@ rabbitmq:connect <name>           NOT IMPLEMENTED
 rabbitmq:create <name>            Create a rabbitmq service with environment variables
 rabbitmq:destroy <name>           Delete the service, delete the data and stop its container if there are no links left
 rabbitmq:enter <name> [command]   Enter or run a command in a running rabbitmq service container
+rabbitmq:exists <service>         Check if the rabbitmq service exists
 rabbitmq:export <name> > <file>   NOT IMPLEMENTED
 rabbitmq:expose <name> [port]     Expose a rabbitmq service on custom port if provided (random port otherwise)
 rabbitmq:import <name> <file>     NOT IMPLEMENTED
 rabbitmq:info <name>              Print the connection information
 rabbitmq:link <name> <app>        Link the rabbitmq service to the app
+rabbitmq:linked <name> <app>      Check if the rabbitmq service is linked to an app
 rabbitmq:list                     List all rabbitmq services
 rabbitmq:logs <name> [-t]         Print the most recent log(s) for this service
 rabbitmq:promote <name> <app>     Promote service <name> as RABBITMQ_URL in <app>
