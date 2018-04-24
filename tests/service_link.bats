@@ -68,3 +68,10 @@ teardown() {
   assert_contains "$url" "amqp2://l:$password@dokku-rabbitmq-l:5672/l"
   dokku "$PLUGIN_COMMAND_PREFIX:unlink" l my_app
 }
+
+@test "($PLUGIN_COMMAND_PREFIX:link) adds a querystring" {
+  dokku "$PLUGIN_COMMAND_PREFIX:link" l my_app --querystring "pool=5"
+  url=$(dokku config:get my_app RABBITMQ_URL)
+  assert_contains "$url" "?pool=4"
+  dokku "$PLUGIN_COMMAND_PREFIX:unlink" l my_app
+}
