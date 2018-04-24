@@ -4,6 +4,7 @@ export RABBITMQ_IMAGE_VERSION=${RABBITMQ_IMAGE_VERSION:="3.6.5-management"}
 export RABBITMQ_ROOT=${RABBITMQ_ROOT:="/var/lib/dokku/services/rabbitmq"}
 export RABBITMQ_HOST_ROOT=${RABBITMQ_HOST_ROOT:=$RABBITMQ_ROOT}
 
+export PLUGIN_UNIMPLEMENTED_SUBCOMMANDS=("backup" "backup-auth" "backup-deauth" "backup-schedule" "backup-schedule-cat" "backup-set-encryption" "backup-unschedule" "backup-unset-encryption" "clone" "connect" "export" "import")
 export PLUGIN_COMMAND_PREFIX="rabbitmq"
 export PLUGIN_CONFIG_ROOT=${PLUGIN_CONFIG_ROOT:="$DOKKU_LIB_ROOT/config/$PLUGIN_COMMAND_PREFIX"}
 export PLUGIN_DATA_ROOT=$RABBITMQ_ROOT
