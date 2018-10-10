@@ -46,6 +46,7 @@ rabbitmq:start <name>             Start a previously stopped rabbitmq service
 rabbitmq:stop <name>              Stop a running rabbitmq service
 rabbitmq:unexpose <name>          Unexpose a previously exposed rabbitmq service
 rabbitmq:unlink <name> <app>      Unlink the rabbitmq service from the app
+rabbitmq:upgrade <name>           Upgrade service <service> to the specified version
 ```
 
 ## usage
