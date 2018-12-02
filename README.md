@@ -23,7 +23,7 @@ rabbitmq:backup-auth <name> <aws_access_key_id> <aws_secret_access_key> (<aws_de
 rabbitmq:backup-deauth <name>     NOT IMPLEMENTED
 rabbitmq:backup-schedule <name> <schedule> <bucket> NOT IMPLEMENTED
 rabbitmq:backup-schedule-cat <name> NOT IMPLEMENTED
-rabbitmq:backup-set-encryption <name> <encryption_key> NOT IMPLEMENTED
+rabbitmq:backup-set-encryption <name> <passphrase> NOT IMPLEMENTED
 rabbitmq:backup-unschedule <name> NOT IMPLEMENTED
 rabbitmq:backup-unset-encryption <name> NOT IMPLEMENTED
 rabbitmq:clone <name> <new-name>  NOT IMPLEMENTED
