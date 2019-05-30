@@ -13,6 +13,7 @@ service_connect() {
   local SERVICE="$1"
   local SERVICE_ROOT="$PLUGIN_DATA_ROOT/$SERVICE"
   local SERVICE_NAME="$(get_service_name "$SERVICE")"
+  local DATABASE_NAME="$(get_database_name "$SERVICE")"
 
   dokku_log_fail "Not yet implemented"
 }
@@ -56,6 +57,8 @@ service_create() {
   else
     echo "" >"$SERVICE_ROOT/ENV"
   fi
+
+  write_database_name "$SERVICE"
   service_create_container "$SERVICE"
 }
 
@@ -65,8 +68,9 @@ service_create_container() {
   local SERVICE_HOST_ROOT="$PLUGIN_DATA_HOST_ROOT/$SERVICE"
   local SERVICE_NAME="$(get_service_name "$SERVICE")"
   local PASSWORD="$(cat "$SERVICE_ROOT/PASSWORD")"
+  local DATABASE_NAME="$(get_database_name "$SERVICE")"
 
-  ID=$(docker run --name "$SERVICE_NAME" -v "$SERVICE_HOST_ROOT/data:/var/lib/rabbitmq" --hostname "$SERVICE" -e "RABBITMQ_DEFAULT_USER=$SERVICE" -e "RABBITMQ_DEFAULT_PASS=$PASSWORD" -e "RABBITMQ_DEFAULT_VHOST=$SERVICE" --env-file="$SERVICE_ROOT/ENV" -d --restart always --label dokku=service --label dokku.service=rabbitmq "$PLUGIN_IMAGE:$PLUGIN_IMAGE_VERSION")
+  ID=$(docker run --name "$SERVICE_NAME" -v "$SERVICE_HOST_ROOT/data:/var/lib/rabbitmq" --hostname "$SERVICE" -e "RABBITMQ_DEFAULT_USER=$SERVICE" -e "RABBITMQ_DEFAULT_PASS=$PASSWORD" -e "RABBITMQ_DEFAULT_VHOST=$DATABASE_NAME" --env-file="$SERVICE_ROOT/ENV" -d --restart always --label dokku=service --label dokku.service=rabbitmq "$PLUGIN_IMAGE:$PLUGIN_IMAGE_VERSION")
   echo "$ID" >"$SERVICE_ROOT/ID"
 
   dokku_log_verbose_quiet "Waiting for container to be ready"
@@ -79,6 +83,7 @@ service_create_container() {
 service_export() {
   local SERVICE="$1"
   local SERVICE_ROOT="$PLUGIN_DATA_ROOT/$SERVICE"
+  local DATABASE_NAME="$(get_database_name "$SERVICE")"
 
   dokku_log_fail "Not yet implemented"
 }
@@ -88,6 +93,7 @@ service_import() {
   local SERVICE_ROOT="$PLUGIN_DATA_ROOT/$SERVICE"
   local SERVICE_HOST_ROOT="$PLUGIN_DATA_HOST_ROOT/$SERVICE"
   local SERVICE_NAME="$(get_service_name "$SERVICE")"
+  local DATABASE_NAME="$(get_database_name "$SERVICE")"
 
   dokku_log_fail "Not yet implemented"
 }
@@ -121,7 +127,8 @@ service_start() {
 service_url() {
   local SERVICE="$1"
   local SERVICE_ROOT="$PLUGIN_DATA_ROOT/$SERVICE"
-  local PASSWORD="$(cat "$SERVICE_ROOT/PASSWORD")"
   local SERVICE_DNS_HOSTNAME="$(service_dns_hostname "$SERVICE")"
-  echo "$PLUGIN_SCHEME://$SERVICE:$PASSWORD@$SERVICE_DNS_HOSTNAME:${PLUGIN_DATASTORE_PORTS[0]}/$SERVICE"
+  local DATABASE_NAME="$(get_database_name "$SERVICE")"
+  local PASSWORD="$(cat "$SERVICE_ROOT/PASSWORD")"
+  echo "$PLUGIN_SCHEME://$SERVICE:$PASSWORD@$SERVICE_DNS_HOSTNAME:${PLUGIN_DATASTORE_PORTS[0]}/$DATABASE_NAME"
 }
