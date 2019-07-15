@@ -11,20 +11,20 @@ teardown() {
 
 @test "($PLUGIN_COMMAND_PREFIX:list) with no exposed ports, no linked apps" {
   run dokku "$PLUGIN_COMMAND_PREFIX:list"
-  assert_contains "${lines[*]}" "l     rabbitmq:3.7.14-management  running  -              -"
+  assert_contains "${lines[*]}" "l     rabbitmq:3.7.16-management  running  -              -"
 }
 
 @test "($PLUGIN_COMMAND_PREFIX:list) with exposed ports" {
   dokku "$PLUGIN_COMMAND_PREFIX:expose" l 4242 4243 4244 4245
   run dokku "$PLUGIN_COMMAND_PREFIX:list"
-  assert_contains "${lines[*]}" "l     rabbitmq:3.7.14-management  running  5672->4242 4369->4243 35197->4244 15672->4245   -"
+  assert_contains "${lines[*]}" "l     rabbitmq:3.7.16-management  running  5672->4242 4369->4243 35197->4244 15672->4245   -"
 }
 
 @test "($PLUGIN_COMMAND_PREFIX:list) with linked app" {
   dokku apps:create my_app
   dokku "$PLUGIN_COMMAND_PREFIX:link" l my_app
   run dokku "$PLUGIN_COMMAND_PREFIX:list"
-  assert_contains "${lines[*]}" "l     rabbitmq:3.7.14-management  running  -              my_app"
+  assert_contains "${lines[*]}" "l     rabbitmq:3.7.16-management  running  -              my_app"
   dokku --force apps:destroy my_app
 }
 
