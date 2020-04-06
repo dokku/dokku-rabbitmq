@@ -1,4 +1,4 @@
-# dokku rabbitmq [![Build Status](https://img.shields.io/travis/dokku/dokku-rabbitmq.svg?branch=master "Build Status")](https://travis-ci.org/dokku/dokku-rabbitmq) [![IRC Network](https://img.shields.io/badge/irc-freenode-blue.svg "IRC Freenode")](https://webchat.freenode.net/?channels=dokku)
+# dokku rabbitmq [![Build Status](https://img.shields.io/circleci/project/github/dokku/dokku-rabbitmq.svg?branch=master&style=flat-square "Build Status")](https://circleci.com/gh/dokku/dokku-rabbitmq/tree/master) [![IRC Network](https://img.shields.io/badge/irc-freenode-blue.svg?style=flat-square "IRC Freenode")](https://webchat.freenode.net/?channels=dokku)
 
 Official rabbitmq plugin for dokku. Currently defaults to installing [rabbitmq 3.7.21-management](https://hub.docker.com/_/rabbitmq/).
 
