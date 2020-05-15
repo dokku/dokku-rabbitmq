@@ -65,15 +65,15 @@ Create a rabbitmq service named lolipop:
 dokku rabbitmq:create lolipop
 ```
 
-You can also specify the image and image version to use for the service. It *must* be compatible with the ${plugin_image} image.
+You can also specify the image and image version to use for the service. It *must* be compatible with the rabbitmq image. 
 
 ```shell
-export RABBITMQ_IMAGE="${PLUGIN_IMAGE}"
+export RABBITMQ_IMAGE="rabbitmq"
 export RABBITMQ_IMAGE_VERSION="${PLUGIN_IMAGE_VERSION}"
 dokku rabbitmq:create lolipop
 ```
 
-You can also specify custom environment variables to start the rabbitmq service in semi-colon separated form.
+You can also specify custom environment variables to start the rabbitmq service in semi-colon separated form. 
 
 ```shell
 export RABBITMQ_CUSTOM_ENV="USER=alpha;HOST=beta"
@@ -169,7 +169,7 @@ flags:
 - `-a|--alias "BLUE_DATABASE"`: an alternative alias to use for linking to an app via environment variable
 - `-q|--querystring "pool=5"`: ampersand delimited querystring arguments to append to the service link
 
-A rabbitmq service can be linked to a container. This will use native docker links via the docker-options plugin. Here we link it to our 'playground' app.
+A rabbitmq service can be linked to a container. This will use native docker links via the docker-options plugin. Here we link it to our 'playground' app. 
 
 > NOTE: this will restart your app
 
@@ -200,14 +200,14 @@ The host exposed here only works internally in docker containers. If you want yo
 dokku rabbitmq:link other_service playground
 ```
 
-It is possible to change the protocol for rabbitmq_url by setting the environment variable rabbitmq_database_scheme on the app. Doing so will after linking will cause the plugin to think the service is not linked, and we advise you to unlink before proceeding.
+It is possible to change the protocol for `RABBITMQ_URL` by setting the environment variable `RABBITMQ_DATABASE_SCHEME` on the app. Doing so will after linking will cause the plugin to think the service is not linked, and we advise you to unlink before proceeding. 
 
 ```shell
 dokku config:set playground RABBITMQ_DATABASE_SCHEME=amqp2
 dokku rabbitmq:link lolipop playground
 ```
 
-This will cause rabbitmq_url to be set as:
+This will cause `RABBITMQ_URL` to be set as:
 
 ```
 amqp2://lolipop:SOME_PASSWORD@dokku-rabbitmq-lolipop:5672/lolipop
@@ -239,13 +239,13 @@ The lifecycle of each service can be managed through the following commands:
 dokku rabbitmq:enter <service>
 ```
 
-A bash prompt can be opened against a running service. Filesystem changes will not be saved to disk.
+A bash prompt can be opened against a running service. Filesystem changes will not be saved to disk. 
 
 ```shell
 dokku rabbitmq:enter lolipop
 ```
 
-You may also run a command directly against the service. Filesystem changes will not be saved to disk.
+You may also run a command directly against the service. Filesystem changes will not be saved to disk. 
 
 ```shell
 dokku rabbitmq:enter lolipop touch /tmp/test
@@ -258,10 +258,10 @@ dokku rabbitmq:enter lolipop touch /tmp/test
 dokku rabbitmq:expose <service> <ports...>
 ```
 
-Expose the service on the service's normal ports, allowing access to it from the public interface (0. 0. 0. 0):
+Expose the service on the service's normal ports, allowing access to it from the public interface (`0.0.0.0`):
 
 ```shell
-dokku rabbitmq:expose lolipop ${PLUGIN_DATASTORE_PORTS[@]}
+dokku rabbitmq:expose lolipop 5672 4369 35197 15672
 ```
 
 ### unexpose a previously exposed rabbitmq service
@@ -271,7 +271,7 @@ dokku rabbitmq:expose lolipop ${PLUGIN_DATASTORE_PORTS[@]}
 dokku rabbitmq:unexpose <service>
 ```
 
-Unexpose the service, removing access to it from the public interface (0. 0. 0. 0):
+Unexpose the service, removing access to it from the public interface (`0.0.0.0`):
 
 ```shell
 dokku rabbitmq:unexpose lolipop
@@ -298,7 +298,7 @@ You can promote the new service to be the primary one:
 dokku rabbitmq:promote other_service playground
 ```
 
-This will replace rabbitmq_url with the url from other_service and generate another environment variable to hold the previous value if necessary. You could end up with the following for example:
+This will replace `RABBITMQ_URL` with the url from other_service and generate another environment variable to hold the previous value if necessary. You could end up with the following for example:
 
 ```
 RABBITMQ_URL=amqp://other_service:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
@@ -376,7 +376,7 @@ Service scripting can be executed using the following commands:
 dokku rabbitmq:app-links <app>
 ```
 
-List all rabbitmq services that are linked to the 'playground' app.
+List all rabbitmq services that are linked to the 'playground' app. 
 
 ```shell
 dokku rabbitmq:app-links playground
@@ -389,7 +389,7 @@ dokku rabbitmq:app-links playground
 dokku rabbitmq:exists <service>
 ```
 
-Here we check if the lolipop rabbitmq service exists.
+Here we check if the lolipop rabbitmq service exists. 
 
 ```shell
 dokku rabbitmq:exists lolipop
@@ -402,7 +402,7 @@ dokku rabbitmq:exists lolipop
 dokku rabbitmq:linked <service> <app>
 ```
 
-Here we check if the lolipop rabbitmq service is linked to the 'playground' app.
+Here we check if the lolipop rabbitmq service is linked to the 'playground' app. 
 
 ```shell
 dokku rabbitmq:linked lolipop playground
@@ -415,7 +415,7 @@ dokku rabbitmq:linked lolipop playground
 dokku rabbitmq:links <service>
 ```
 
-List all apps linked to the 'lolipop' rabbitmq service.
+List all apps linked to the 'lolipop' rabbitmq service. 
 
 ```shell
 dokku rabbitmq:links lolipop
