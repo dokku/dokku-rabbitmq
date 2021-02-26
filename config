@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-_DIR="$(dirname $0)"
-export RABBITMQ_IMAGE=${RABBITMQ_IMAGE:="$(awk -F '[ :]' '{print $2}' $_DIR/Dockerfile)"}
-export RABBITMQ_IMAGE_VERSION=${RABBITMQ_IMAGE_VERSION:="$(awk -F '[ :]' '{print $3}' $_DIR/Dockerfile)"}
+_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export RABBITMQ_IMAGE=${RABBITMQ_IMAGE:="$(awk -F '[ :]' '{print $2}' "${_DIR}/Dockerfile")"}
+export RABBITMQ_IMAGE_VERSION=${RABBITMQ_IMAGE_VERSION:="$(awk -F '[ :]' '{print $3}' "${_DIR}/Dockerfile")"}
 export RABBITMQ_ROOT=${RABBITMQ_ROOT:="$DOKKU_LIB_ROOT/services/rabbitmq"}
 export RABBITMQ_HOST_ROOT=${RABBITMQ_HOST_ROOT:=$RABBITMQ_ROOT}
 
