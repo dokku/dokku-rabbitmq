@@ -22,7 +22,7 @@ rabbitmq:create <service> [--create-flags...]   # create a rabbitmq service
 rabbitmq:destroy <service> [-f|--force]         # delete the rabbitmq service/data/container if there are no links left
 rabbitmq:enter <service>                        # enter or run a command in a running rabbitmq service container
 rabbitmq:exists <service>                       # check if the rabbitmq service exists
-rabbitmq:expose <service> <ports...>            # expose a rabbitmq service on custom port if provided (random port otherwise)
+rabbitmq:expose <service> <ports...>            # expose a rabbitmq service on custom host:port if provided (random port on the 0.0.0.0 interface if otherwise unspecified)
 rabbitmq:info <service> [--single-info-flag]    # print the service information
 rabbitmq:link <service> <app> [--link-flags...] # link the rabbitmq service to the app
 rabbitmq:linked <service> <app>                 # check if the rabbitmq service is linked to an app
@@ -251,7 +251,7 @@ You may also run a command directly against the service. Filesystem changes will
 dokku rabbitmq:enter lolipop touch /tmp/test
 ```
 
-### expose a rabbitmq service on custom port if provided (random port otherwise)
+### expose a rabbitmq service on custom host:port if provided (random port on the 0.0.0.0 interface if otherwise unspecified)
 
 ```shell
 # usage
@@ -262,6 +262,12 @@ Expose the service on the service's normal ports, allowing access to it from the
 
 ```shell
 dokku rabbitmq:expose lolipop 5672 4369 35197 15672
+```
+
+Expose the service on the service's normal ports, with the first on a specified ip adddress (127.0.0.1):
+
+```shell
+dokku rabbitmq:expose lolipop 127.0.0.1:5672 4369 35197 15672
 ```
 
 ### unexpose a previously exposed rabbitmq service
