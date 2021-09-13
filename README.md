@@ -62,10 +62,10 @@ flags:
 - `-r|--root-password PASSWORD`: override the root-level service password
 - `-s|--shm-size SHM_SIZE`: override shared memory size for rabbitmq docker container
 
-Create a rabbitmq service named lolipop:
+Create a rabbitmq service named lollipop:
 
 ```shell
-dokku rabbitmq:create lolipop
+dokku rabbitmq:create lollipop
 ```
 
 You can also specify the image and image version to use for the service. It *must* be compatible with the rabbitmq image.
@@ -73,14 +73,14 @@ You can also specify the image and image version to use for the service. It *mus
 ```shell
 export RABBITMQ_IMAGE="rabbitmq"
 export RABBITMQ_IMAGE_VERSION="${PLUGIN_IMAGE_VERSION}"
-dokku rabbitmq:create lolipop
+dokku rabbitmq:create lollipop
 ```
 
 You can also specify custom environment variables to start the rabbitmq service in semi-colon separated form.
 
 ```shell
 export RABBITMQ_CUSTOM_ENV="USER=alpha;HOST=beta"
-dokku rabbitmq:create lolipop
+dokku rabbitmq:create lollipop
 ```
 
 ### print the service information
@@ -106,22 +106,22 @@ flags:
 Get connection information as follows:
 
 ```shell
-dokku rabbitmq:info lolipop
+dokku rabbitmq:info lollipop
 ```
 
 You can also retrieve a specific piece of service info via flags:
 
 ```shell
-dokku rabbitmq:info lolipop --config-dir
-dokku rabbitmq:info lolipop --data-dir
-dokku rabbitmq:info lolipop --dsn
-dokku rabbitmq:info lolipop --exposed-ports
-dokku rabbitmq:info lolipop --id
-dokku rabbitmq:info lolipop --internal-ip
-dokku rabbitmq:info lolipop --links
-dokku rabbitmq:info lolipop --service-root
-dokku rabbitmq:info lolipop --status
-dokku rabbitmq:info lolipop --version
+dokku rabbitmq:info lollipop --config-dir
+dokku rabbitmq:info lollipop --data-dir
+dokku rabbitmq:info lollipop --dsn
+dokku rabbitmq:info lollipop --exposed-ports
+dokku rabbitmq:info lollipop --id
+dokku rabbitmq:info lollipop --internal-ip
+dokku rabbitmq:info lollipop --links
+dokku rabbitmq:info lollipop --service-root
+dokku rabbitmq:info lollipop --status
+dokku rabbitmq:info lollipop --version
 ```
 
 ### list all rabbitmq services
@@ -151,13 +151,13 @@ flags:
 You can tail logs for a particular service:
 
 ```shell
-dokku rabbitmq:logs lolipop
+dokku rabbitmq:logs lollipop
 ```
 
 By default, logs will not be tailed, but you can do this with the --tail flag:
 
 ```shell
-dokku rabbitmq:logs lolipop --tail
+dokku rabbitmq:logs lollipop --tail
 ```
 
 ### link the rabbitmq service to the app
@@ -177,24 +177,24 @@ A rabbitmq service can be linked to a container. This will use native docker lin
 > NOTE: this will restart your app
 
 ```shell
-dokku rabbitmq:link lolipop playground
+dokku rabbitmq:link lollipop playground
 ```
 
 The following environment variables will be set automatically by docker (not on the app itself, so they won’t be listed when calling dokku config):
 
 ```
-DOKKU_RABBITMQ_LOLIPOP_NAME=/lolipop/DATABASE
-DOKKU_RABBITMQ_LOLIPOP_PORT=tcp://172.17.0.1:5672
-DOKKU_RABBITMQ_LOLIPOP_PORT_5672_TCP=tcp://172.17.0.1:5672
-DOKKU_RABBITMQ_LOLIPOP_PORT_5672_TCP_PROTO=tcp
-DOKKU_RABBITMQ_LOLIPOP_PORT_5672_TCP_PORT=5672
-DOKKU_RABBITMQ_LOLIPOP_PORT_5672_TCP_ADDR=172.17.0.1
+DOKKU_RABBITMQ_LOLLIPOP_NAME=/lollipop/DATABASE
+DOKKU_RABBITMQ_LOLLIPOP_PORT=tcp://172.17.0.1:5672
+DOKKU_RABBITMQ_LOLLIPOP_PORT_5672_TCP=tcp://172.17.0.1:5672
+DOKKU_RABBITMQ_LOLLIPOP_PORT_5672_TCP_PROTO=tcp
+DOKKU_RABBITMQ_LOLLIPOP_PORT_5672_TCP_PORT=5672
+DOKKU_RABBITMQ_LOLLIPOP_PORT_5672_TCP_ADDR=172.17.0.1
 ```
 
 The following will be set on the linked application by default:
 
 ```
-RABBITMQ_URL=amqp://lolipop:SOME_PASSWORD@dokku-rabbitmq-lolipop:5672/lolipop
+RABBITMQ_URL=amqp://lollipop:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672/lollipop
 ```
 
 The host exposed here only works internally in docker containers. If you want your container to be reachable from outside, you should use the `expose` subcommand. Another service can be linked to your app:
@@ -207,13 +207,13 @@ It is possible to change the protocol for `RABBITMQ_URL` by setting the environm
 
 ```shell
 dokku config:set playground RABBITMQ_DATABASE_SCHEME=amqp2
-dokku rabbitmq:link lolipop playground
+dokku rabbitmq:link lollipop playground
 ```
 
 This will cause `RABBITMQ_URL` to be set as:
 
 ```
-amqp2://lolipop:SOME_PASSWORD@dokku-rabbitmq-lolipop:5672/lolipop
+amqp2://lollipop:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672/lollipop
 ```
 
 ### unlink the rabbitmq service from the app
@@ -228,7 +228,7 @@ You can unlink a rabbitmq service:
 > NOTE: this will restart your app and unset related environment variables
 
 ```shell
-dokku rabbitmq:unlink lolipop playground
+dokku rabbitmq:unlink lollipop playground
 ```
 
 ### Service Lifecycle
@@ -245,13 +245,13 @@ dokku rabbitmq:enter <service>
 A bash prompt can be opened against a running service. Filesystem changes will not be saved to disk.
 
 ```shell
-dokku rabbitmq:enter lolipop
+dokku rabbitmq:enter lollipop
 ```
 
 You may also run a command directly against the service. Filesystem changes will not be saved to disk.
 
 ```shell
-dokku rabbitmq:enter lolipop touch /tmp/test
+dokku rabbitmq:enter lollipop touch /tmp/test
 ```
 
 ### expose a rabbitmq service on custom host:port if provided (random port on the 0.0.0.0 interface if otherwise unspecified)
@@ -264,13 +264,13 @@ dokku rabbitmq:expose <service> <ports...>
 Expose the service on the service's normal ports, allowing access to it from the public interface (`0.0.0.0`):
 
 ```shell
-dokku rabbitmq:expose lolipop 5672 4369 35197 15672
+dokku rabbitmq:expose lollipop 5672 4369 35197 15672
 ```
 
 Expose the service on the service's normal ports, with the first on a specified ip adddress (127.0.0.1):
 
 ```shell
-dokku rabbitmq:expose lolipop 127.0.0.1:5672 4369 35197 15672
+dokku rabbitmq:expose lollipop 127.0.0.1:5672 4369 35197 15672
 ```
 
 ### unexpose a previously exposed rabbitmq service
@@ -283,7 +283,7 @@ dokku rabbitmq:unexpose <service>
 Unexpose the service, removing access to it from the public interface (`0.0.0.0`):
 
 ```shell
-dokku rabbitmq:unexpose lolipop
+dokku rabbitmq:unexpose lollipop
 ```
 
 ### promote service <service> as RABBITMQ_URL in <app>
@@ -312,7 +312,7 @@ This will replace `RABBITMQ_URL` with the url from other_service and generate an
 ```
 RABBITMQ_URL=amqp://other_service:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
 DOKKU_RABBITMQ_BLUE_URL=amqp://other_service:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
-DOKKU_RABBITMQ_SILVER_URL=amqp://lolipop:SOME_PASSWORD@dokku-rabbitmq-lolipop:5672/lolipop
+DOKKU_RABBITMQ_SILVER_URL=amqp://lollipop:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672/lollipop
 ```
 
 ### start a previously stopped rabbitmq service
@@ -325,7 +325,7 @@ dokku rabbitmq:start <service>
 Start the service:
 
 ```shell
-dokku rabbitmq:start lolipop
+dokku rabbitmq:start lollipop
 ```
 
 ### stop a running rabbitmq service
@@ -338,7 +338,7 @@ dokku rabbitmq:stop <service>
 Stop the service and the running container:
 
 ```shell
-dokku rabbitmq:stop lolipop
+dokku rabbitmq:stop lollipop
 ```
 
 ### graceful shutdown and restart of the rabbitmq service container
@@ -351,7 +351,7 @@ dokku rabbitmq:restart <service>
 Restart the service:
 
 ```shell
-dokku rabbitmq:restart lolipop
+dokku rabbitmq:restart lollipop
 ```
 
 ### upgrade service <service> to the specified versions
@@ -373,7 +373,7 @@ flags:
 You can upgrade an existing service to a new image or image-version:
 
 ```shell
-dokku rabbitmq:upgrade lolipop
+dokku rabbitmq:upgrade lollipop
 ```
 
 ### Service Automation
@@ -400,10 +400,10 @@ dokku rabbitmq:app-links playground
 dokku rabbitmq:exists <service>
 ```
 
-Here we check if the lolipop rabbitmq service exists.
+Here we check if the lollipop rabbitmq service exists.
 
 ```shell
-dokku rabbitmq:exists lolipop
+dokku rabbitmq:exists lollipop
 ```
 
 ### check if the rabbitmq service is linked to an app
@@ -413,10 +413,10 @@ dokku rabbitmq:exists lolipop
 dokku rabbitmq:linked <service> <app>
 ```
 
-Here we check if the lolipop rabbitmq service is linked to the `playground` app.
+Here we check if the lollipop rabbitmq service is linked to the `playground` app.
 
 ```shell
-dokku rabbitmq:linked lolipop playground
+dokku rabbitmq:linked lollipop playground
 ```
 
 ### list all apps linked to the rabbitmq service
@@ -426,10 +426,10 @@ dokku rabbitmq:linked lolipop playground
 dokku rabbitmq:links <service>
 ```
 
-List all apps linked to the `lolipop` rabbitmq service.
+List all apps linked to the `lollipop` rabbitmq service.
 
 ```shell
-dokku rabbitmq:links lolipop
+dokku rabbitmq:links lollipop
 ```
 
 ### Disabling `docker pull` calls
