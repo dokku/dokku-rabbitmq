@@ -40,7 +40,7 @@ rabbitmq:upgrade <service> [--upgrade-flags...] # upgrade service <service> to t
 
 ## Usage
 
-Help for any commands can be displayed by specifying the command as an argument to rabbitmq:help. Please consult the `rabbitmq:help` command for any undocumented commands.
+Help for any commands can be displayed by specifying the command as an argument to rabbitmq:help. Plugin help output in conjunction with any files in the `docs/` folder is used to generate the plugin documentation. Please consult the `rabbitmq:help` command for any undocumented commands.
 
 ### Basic Usage
 
