@@ -17,25 +17,25 @@ sudo dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git rabbitmq
 ## Commands
 
 ```
-rabbitmq:app-links <app>                        # list all rabbitmq service links for a given app
-rabbitmq:create <service> [--create-flags...]   # create a rabbitmq service
-rabbitmq:destroy <service> [-f|--force]         # delete the rabbitmq service/data/container if there are no links left
-rabbitmq:enter <service>                        # enter or run a command in a running rabbitmq service container
-rabbitmq:exists <service>                       # check if the rabbitmq service exists
-rabbitmq:expose <service> <ports...>            # expose a rabbitmq service on custom host:port if provided (random port on the 0.0.0.0 interface if otherwise unspecified)
-rabbitmq:info <service> [--single-info-flag]    # print the service information
-rabbitmq:link <service> <app> [--link-flags...] # link the rabbitmq service to the app
-rabbitmq:linked <service> <app>                 # check if the rabbitmq service is linked to an app
-rabbitmq:links <service>                        # list all apps linked to the rabbitmq service
-rabbitmq:list                                   # list all rabbitmq services
-rabbitmq:logs <service> [-t|--tail]             # print the most recent log(s) for this service
-rabbitmq:promote <service> <app>                # promote service <service> as RABBITMQ_URL in <app>
-rabbitmq:restart <service>                      # graceful shutdown and restart of the rabbitmq service container
-rabbitmq:start <service>                        # start a previously stopped rabbitmq service
-rabbitmq:stop <service>                         # stop a running rabbitmq service
-rabbitmq:unexpose <service>                     # unexpose a previously exposed rabbitmq service
-rabbitmq:unlink <service> <app>                 # unlink the rabbitmq service from the app
-rabbitmq:upgrade <service> [--upgrade-flags...] # upgrade service <service> to the specified versions
+rabbitmq:app-links <app>                           # list all rabbitmq service links for a given app
+rabbitmq:create <service> [--create-flags...]      # create a rabbitmq service
+rabbitmq:destroy <service> [-f|--force]            # delete the rabbitmq service/data/container if there are no links left
+rabbitmq:enter <service>                           # enter or run a command in a running rabbitmq service container
+rabbitmq:exists <service>                          # check if the rabbitmq service exists
+rabbitmq:expose <service> <ports...>               # expose a rabbitmq service on custom host:port if provided (random port on the 0.0.0.0 interface if otherwise unspecified)
+rabbitmq:info <service> [--single-info-flag]       # print the service information
+rabbitmq:link <service> <app> [--link-flags...]    # link the rabbitmq service to the app
+rabbitmq:linked <service> <app>                    # check if the rabbitmq service is linked to an app
+rabbitmq:links <service>                           # list all apps linked to the rabbitmq service
+rabbitmq:list                                      # list all rabbitmq services
+rabbitmq:logs <service> [-t|--tail] <tail-num-optional> # print the most recent log(s) for this service
+rabbitmq:promote <service> <app>                   # promote service <service> as RABBITMQ_URL in <app>
+rabbitmq:restart <service>                         # graceful shutdown and restart of the rabbitmq service container
+rabbitmq:start <service>                           # start a previously stopped rabbitmq service
+rabbitmq:stop <service>                            # stop a running rabbitmq service
+rabbitmq:unexpose <service>                        # unexpose a previously exposed rabbitmq service
+rabbitmq:unlink <service> <app>                    # unlink the rabbitmq service from the app
+rabbitmq:upgrade <service> [--upgrade-flags...]    # upgrade service <service> to the specified versions
 ```
 
 ## Usage
@@ -141,12 +141,12 @@ dokku rabbitmq:list
 
 ```shell
 # usage
-dokku rabbitmq:logs <service> [-t|--tail]
+dokku rabbitmq:logs <service> [-t|--tail] <tail-num-optional>
 ```
 
 flags:
 
-- `-t|--tail`: do not stop when end of the logs are reached and wait for additional output
+- `-t|--tail [<tail-num>]`: do not stop when end of the logs are reached and wait for additional output
 
 You can tail logs for a particular service:
 
@@ -158,6 +158,12 @@ By default, logs will not be tailed, but you can do this with the --tail flag:
 
 ```shell
 dokku rabbitmq:logs lollipop --tail
+```
+
+The default tail setting is to show all logs, but an initial count can also be specified:
+
+```shell
+dokku rabbitmq:logs lollipop --tail 5
 ```
 
 ### link the rabbitmq service to the app
