@@ -29,6 +29,7 @@ rabbitmq:linked <service> <app>                    # check if the rabbitmq servi
 rabbitmq:links <service>                           # list all apps linked to the rabbitmq service
 rabbitmq:list                                      # list all rabbitmq services
 rabbitmq:logs <service> [-t|--tail] <tail-num-optional> # print the most recent log(s) for this service
+rabbitmq:pause <service>                           # pause a running rabbitmq service
 rabbitmq:promote <service> <app>                   # promote service <service> as RABBITMQ_URL in <app>
 rabbitmq:restart <service>                         # graceful shutdown and restart of the rabbitmq service container
 rabbitmq:start <service>                           # start a previously stopped rabbitmq service
@@ -343,10 +344,23 @@ dokku rabbitmq:start lollipop
 dokku rabbitmq:stop <service>
 ```
 
-Stop the service and the running container:
+Stop the service and removes the running container:
 
 ```shell
 dokku rabbitmq:stop lollipop
+```
+
+### pause a running rabbitmq service
+
+```shell
+# usage
+dokku rabbitmq:pause <service>
+```
+
+Pause the running container for the service:
+
+```shell
+dokku rabbitmq:pause lollipop
 ```
 
 ### graceful shutdown and restart of the rabbitmq service container
