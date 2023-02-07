@@ -252,6 +252,12 @@ Set the network to attach after the service container is started:
 dokku rabbitmq:set lollipop post-create-network custom-network
 ```
 
+Set multiple networks:
+
+```shell
+dokku rabbitmq:set lollipop post-create-network custom-network,other-network
+```
+
 Unset the post-create-network value:
 
 ```shell
