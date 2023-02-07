@@ -1,4 +1,4 @@
 [plugin]
 description = "dokku rabbitmq service plugin"
-version = "1.27.2"
+version = "1.27.3"
 [plugin.config]
