@@ -100,7 +100,10 @@ flags:
 - `--exposed-ports`: show service exposed ports
 - `--id`: show the service container id
 - `--internal-ip`: show the service internal ip
+- `--initial-network`: show the initial network being connected to
 - `--links`: show the service app links
+- `--post-create-network`: show the networks to attach to after service container creation
+- `--post-start-network`: show the networks to attach to after service container start
 - `--service-root`: show the service root directory
 - `--status`: show the service running status
 - `--version`: show the service image version
@@ -120,7 +123,10 @@ dokku rabbitmq:info lollipop --dsn
 dokku rabbitmq:info lollipop --exposed-ports
 dokku rabbitmq:info lollipop --id
 dokku rabbitmq:info lollipop --internal-ip
+dokku rabbitmq:info lollipop --initial-network
 dokku rabbitmq:info lollipop --links
+dokku rabbitmq:info lollipop --post-create-network
+dokku rabbitmq:info lollipop --post-start-network
 dokku rabbitmq:info lollipop --service-root
 dokku rabbitmq:info lollipop --status
 dokku rabbitmq:info lollipop --version
