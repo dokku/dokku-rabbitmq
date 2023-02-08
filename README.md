@@ -32,6 +32,7 @@ rabbitmq:logs <service> [-t|--tail] <tail-num-optional> # print the most recent 
 rabbitmq:pause <service>                           # pause a running rabbitmq service
 rabbitmq:promote <service> <app>                   # promote service <service> as RABBITMQ_URL in <app>
 rabbitmq:restart <service>                         # graceful shutdown and restart of the rabbitmq service container
+rabbitmq:set <service> <key> <value>               # set or clear a property for a service
 rabbitmq:start <service>                           # start a previously stopped rabbitmq service
 rabbitmq:stop <service>                            # stop a running rabbitmq service
 rabbitmq:unexpose <service>                        # unexpose a previously exposed rabbitmq service
@@ -99,7 +100,10 @@ flags:
 - `--exposed-ports`: show service exposed ports
 - `--id`: show the service container id
 - `--internal-ip`: show the service internal ip
+- `--initial-network`: show the initial network being connected to
 - `--links`: show the service app links
+- `--post-create-network`: show the networks to attach to after service container creation
+- `--post-start-network`: show the networks to attach to after service container start
 - `--service-root`: show the service root directory
 - `--status`: show the service running status
 - `--version`: show the service image version
@@ -119,7 +123,10 @@ dokku rabbitmq:info lollipop --dsn
 dokku rabbitmq:info lollipop --exposed-ports
 dokku rabbitmq:info lollipop --id
 dokku rabbitmq:info lollipop --internal-ip
+dokku rabbitmq:info lollipop --initial-network
 dokku rabbitmq:info lollipop --links
+dokku rabbitmq:info lollipop --post-create-network
+dokku rabbitmq:info lollipop --post-start-network
 dokku rabbitmq:info lollipop --service-root
 dokku rabbitmq:info lollipop --status
 dokku rabbitmq:info lollipop --version
@@ -236,6 +243,31 @@ You can unlink a rabbitmq service:
 
 ```shell
 dokku rabbitmq:unlink lollipop playground
+```
+
+### set or clear a property for a service
+
+```shell
+# usage
+dokku rabbitmq:set <service> <key> <value>
+```
+
+Set the network to attach after the service container is started:
+
+```shell
+dokku rabbitmq:set lollipop post-create-network custom-network
+```
+
+Set multiple networks:
+
+```shell
+dokku rabbitmq:set lollipop post-create-network custom-network,other-network
+```
+
+Unset the post-create-network value:
+
+```shell
+dokku rabbitmq:set lollipop post-create-network
 ```
 
 ### Service Lifecycle
