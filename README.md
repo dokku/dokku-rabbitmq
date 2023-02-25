@@ -234,12 +234,6 @@ This will cause `RABBITMQ_URL` to be set as:
 amqp2://lollipop:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672/lollipop
 ```
 
-If you specify `RABBITMQ_DATABASE_SCHEME` to equal `http`, we`ll also automatically adjust `RABBITMQ_URL` to match the http interface:
-
-```
-http://lollipop:SOME_PASSWORD@dokku-rabbitmq-lollipop:${PLUGIN_DATASTORE_PORTS[1]}
-```
-
 ### unlink the rabbitmq service from the app
 
 ```shell
