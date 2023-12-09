@@ -62,9 +62,9 @@ flags:
 - `-m|--memory MEMORY`: container memory limit in megabytes (default: unlimited)
 - `-N|--initial-network INITIAL_NETWORK`: the initial network to attach the service to
 - `-p|--password PASSWORD`: override the user-level service password
-- `-P|--post-create-network NETWORKS`: a comman-separated list of networks to attach the service container to after service creation
+- `-P|--post-create-network NETWORKS`: a comma-separated list of networks to attach the service container to after service creation
 - `-r|--root-password PASSWORD`: override the root-level service password
-- `-S|--post-start-network NETWORKS`: a comman-separated list of networks to attach the service container to after service start
+- `-S|--post-start-network NETWORKS`: a comma-separated list of networks to attach the service container to after service start
 - `-s|--shm-size SHM_SIZE`: override shared memory size for rabbitmq docker container
 
 Create a rabbitmq service named lollipop:
@@ -73,7 +73,7 @@ Create a rabbitmq service named lollipop:
 dokku rabbitmq:create lollipop
 ```
 
-You can also specify the image and image version to use for the service. It *must* be compatible with the rabbitmq image.
+You can also specify the image and image version to use for the service. It _must_ be compatible with the rabbitmq image.
 
 ```shell
 export RABBITMQ_IMAGE="rabbitmq"
@@ -139,7 +139,7 @@ dokku rabbitmq:info lollipop --version
 
 ```shell
 # usage
-dokku rabbitmq:list 
+dokku rabbitmq:list
 ```
 
 List all services:
@@ -430,9 +430,9 @@ flags:
 - `-i|--image IMAGE`: the image name to start the service with
 - `-I|--image-version IMAGE_VERSION`: the image version to start the service with
 - `-N|--initial-network INITIAL_NETWORK`: the initial network to attach the service to
-- `-P|--post-create-network NETWORKS`: a comman-separated list of networks to attach the service container to after service creation
+- `-P|--post-create-network NETWORKS`: a comma-separated list of networks to attach the service container to after service creation
 - `-R|--restart-apps "true"`: whether or not to force an app restart (default: false)
-- `-S|--post-start-network NETWORKS`: a comman-separated list of networks to attach the service container to after service start
+- `-S|--post-start-network NETWORKS`: a comma-separated list of networks to attach the service container to after service start
 - `-s|--shm-size SHM_SIZE`: override shared memory size for rabbitmq docker container
 
 You can upgrade an existing service to a new image or image-version:
