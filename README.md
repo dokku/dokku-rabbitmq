@@ -81,7 +81,7 @@ export RABBITMQ_IMAGE_VERSION="${PLUGIN_IMAGE_VERSION}"
 dokku rabbitmq:create lollipop
 ```
 
-You can also specify custom environment variables to start the rabbitmq service in semi-colon separated form.
+You can also specify custom environment variables to start the rabbitmq service in semicolon-separated form.
 
 ```shell
 export RABBITMQ_CUSTOM_ENV="USER=alpha;HOST=beta"
