@@ -1,6 +1,6 @@
 # dokku rabbitmq [![Build Status](https://img.shields.io/github/actions/workflow/status/dokku/dokku-rabbitmq/ci.yml?branch=master&style=flat-square "Build Status")](https://github.com/dokku/dokku-rabbitmq/actions/workflows/ci.yml?query=branch%3Amaster) [![IRC Network](https://img.shields.io/badge/irc-libera-blue.svg?style=flat-square "IRC Libera")](https://webchat.libera.chat/?channels=dokku)
 
-Official rabbitmq plugin for dokku. Currently defaults to installing [rabbitmq 3.12.6-management](https://hub.docker.com/_/rabbitmq/).
+Official rabbitmq plugin for dokku. Currently defaults to installing [rabbitmq 3.12.10-management](https://hub.docker.com/_/rabbitmq/).
 
 ## Requirements
 
@@ -73,7 +73,7 @@ Create a rabbitmq service named lollipop:
 dokku rabbitmq:create lollipop
 ```
 
-You can also specify the image and image version to use for the service. It _must_ be compatible with the rabbitmq image.
+You can also specify the image and image version to use for the service. It *must* be compatible with the rabbitmq image.
 
 ```shell
 export RABBITMQ_IMAGE="rabbitmq"
