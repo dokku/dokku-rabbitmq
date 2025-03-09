@@ -11,7 +11,7 @@ Official rabbitmq plugin for dokku. Currently defaults to installing [rabbitmq 4
 
 ```shell
 # on 0.19.x+
-sudo dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git rabbitmq
+sudo dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git --name rabbitmq
 ```
 
 ## Commands
