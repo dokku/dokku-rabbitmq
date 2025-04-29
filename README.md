@@ -318,7 +318,7 @@ Expose the service on the service's normal ports, allowing access to it from the
 dokku rabbitmq:expose lollipop 5672 4369 35197 15672
 ```
 
-Expose the service on the service's normal ports, with the first on a specified ip adddress (127.0.0.1):
+Expose the service on the service's normal ports, with the first on a specified ip address (127.0.0.1):
 
 ```shell
 dokku rabbitmq:expose lollipop 127.0.0.1:5672 4369 35197 15672
@@ -498,6 +498,7 @@ List all apps linked to the `lollipop` rabbitmq service.
 ```shell
 dokku rabbitmq:links lollipop
 ```
+
 ### Backups
 
 Datastore backups are supported via AWS S3 and S3 compatible services like [minio](https://github.com/minio/minio).
