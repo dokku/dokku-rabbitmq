@@ -318,7 +318,7 @@ Expose the service on the service's normal ports, allowing access to it from the
 dokku rabbitmq:expose lollipop 5672 4369 35197 15672
 ```
 
-Expose the service on the service's normal ports, with the first on a specified ip adddress (127.0.0.1):
+Expose the service on the service's normal ports, with the first on a specified ip address (127.0.0.1):
 
 ```shell
 dokku rabbitmq:expose lollipop 127.0.0.1:5672 4369 35197 15672
