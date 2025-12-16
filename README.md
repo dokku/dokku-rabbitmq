@@ -1,6 +1,6 @@
 # dokku rabbitmq [![Build Status](https://img.shields.io/github/actions/workflow/status/dokku/dokku-rabbitmq/ci.yml?branch=master&style=flat-square "Build Status")](https://github.com/dokku/dokku-rabbitmq/actions/workflows/ci.yml?query=branch%3Amaster) [![IRC Network](https://img.shields.io/badge/irc-libera-blue.svg?style=flat-square "IRC Libera")](https://webchat.libera.chat/?channels=dokku)
 
-Official rabbitmq plugin for dokku. Currently defaults to installing [rabbitmq 4.2.1-management](https://hub.docker.com/_/rabbitmq/).
+Official rabbitmq plugin for dokku. Currently defaults to installing [rabbitmq 4.2.2-management](https://hub.docker.com/_/rabbitmq/).
 
 ## Requirements
 
