@@ -1,44 +1,42 @@
 # dokku rabbitmq [![Build Status](https://img.shields.io/github/actions/workflow/status/dokku/dokku-rabbitmq/ci.yml?branch=master&style=flat-square "Build Status")](https://github.com/dokku/dokku-rabbitmq/actions/workflows/ci.yml?query=branch%3Amaster) [![IRC Network](https://img.shields.io/badge/irc-libera-blue.svg?style=flat-square "IRC Libera")](https://webchat.libera.chat/?channels=dokku)
 
-Official rabbitmq plugin for dokku. Currently defaults to installing [rabbitmq 4.3.1-management](https://hub.docker.com/_/rabbitmq/).
+Official rabbitmq plugin for dokku. Currently defaults to installing [rabbitmq 4.3.5-management](https://hub.docker.com/_/rabbitmq/).
 
 ## Requirements
 
-- dokku 0.19.x+
+- dokku 0.35.x+
 - docker 1.8.x
 
 ## Installation
 
 ```shell
-# on 0.19.x+
+# on 0.35.x+
 sudo dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git --name rabbitmq
 ```
 
 ## Commands
 
 ```
-rabbitmq:app-links <app>                           # list all rabbitmq service links for a given app
-rabbitmq:backup-set-public-key-encryption <service> <public-key-id> # set GPG Public Key encryption for all future backups of rabbitmq service
-rabbitmq:backup-unset-public-key-encryption <service> # unset GPG Public Key encryption for future backups of the rabbitmq service
-rabbitmq:create <service> [--create-flags...]      # create a rabbitmq service
-rabbitmq:destroy <service> [-f|--force]            # delete the rabbitmq service/data/container if there are no links left
-rabbitmq:enter <service>                           # enter or run a command in a running rabbitmq service container
-rabbitmq:exists <service>                          # check if the rabbitmq service exists
-rabbitmq:expose <service> <ports...>               # expose a rabbitmq service on custom host:port if provided (random port on the 0.0.0.0 interface if otherwise unspecified)
-rabbitmq:info <service> [--single-info-flag]       # print the service information
-rabbitmq:link <service> <app> [--link-flags...]    # link the rabbitmq service to the app
-rabbitmq:linked <service> <app>                    # check if the rabbitmq service is linked to an app
-rabbitmq:links <service>                           # list all apps linked to the rabbitmq service
-rabbitmq:list                                      # list all rabbitmq services
-rabbitmq:logs <service> [-t|--tail] <tail-num-optional> # print the most recent log(s) for this service
-rabbitmq:pause <service>                           # pause a running rabbitmq service
-rabbitmq:promote <service> <app>                   # promote service <service> as RABBITMQ_URL in <app>
-rabbitmq:restart <service>                         # graceful shutdown and restart of the rabbitmq service container
+rabbitmq:app-links [<app>]                         # list all RabbitMQ service links for a given app
+rabbitmq:create <service> [--create-flags...]      # create a RabbitMQ service
+rabbitmq:destroy <service> [-f|--force]            # delete the RabbitMQ service/data/container if there are no links left
+rabbitmq:enter <service>                           # enter or run a command in a running RabbitMQ service container
+rabbitmq:exists <service>                          # check if the RabbitMQ service exists
+rabbitmq:expose <service> <ports...>               # expose a RabbitMQ service on custom host:port if provided (random port on the 0.0.0.0 interface if otherwise unspecified)
+rabbitmq:info <service> [--info-flags...]          # print the service information
+rabbitmq:link <service> [<app>] [--link-flags...]  # link the RabbitMQ service to the app
+rabbitmq:linked <service> [<app>]                  # check if the RabbitMQ service is linked to an app
+rabbitmq:links <service>                           # list all apps linked to the RabbitMQ service
+rabbitmq:list                                      # list all RabbitMQ services
+rabbitmq:logs <service> [-t|--tail [<tail-num>]]   # print the most recent log(s) for this service
+rabbitmq:pause <service>                           # pause a running RabbitMQ service
+rabbitmq:promote <service> [<app>]                 # promote service <service> as RABBITMQ_URL in <app>
+rabbitmq:restart <service>                         # graceful shutdown and restart of the RabbitMQ service container
 rabbitmq:set <service> <key> <value>               # set or clear a property for a service
-rabbitmq:start <service>                           # start a previously stopped rabbitmq service
-rabbitmq:stop <service>                            # stop a running rabbitmq service
-rabbitmq:unexpose <service>                        # unexpose a previously exposed rabbitmq service
-rabbitmq:unlink <service> <app>                    # unlink the rabbitmq service from the app
+rabbitmq:start <service>                           # start a previously stopped RabbitMQ service
+rabbitmq:stop <service>                            # stop a running RabbitMQ service
+rabbitmq:unexpose <service>                        # unexpose a previously exposed RabbitMQ service
+rabbitmq:unlink <service> [<app>] [-n|--no-restart] # unlink the RabbitMQ service from the app
 rabbitmq:upgrade <service> [--upgrade-flags...]    # upgrade service <service> to the specified versions
 ```
 
@@ -48,7 +46,7 @@ Help for any commands can be displayed by specifying the command as an argument 
 
 ### Basic Usage
 
-### create a rabbitmq service
+### create a RabbitMQ service
 
 ```shell
 # usage
@@ -57,17 +55,17 @@ dokku rabbitmq:create <service> [--create-flags...]
 
 flags:
 
-- `-c|--config-options "--args --go=here"`: extra arguments to pass to the container create command (default: `None`)
-- `-C|--custom-env "USER=alpha;HOST=beta"`: semi-colon delimited environment variables to start the service with
-- `-i|--image IMAGE`: the image name to start the service with
-- `-I|--image-version IMAGE_VERSION`: the image version to start the service with
-- `-m|--memory MEMORY`: container memory limit in megabytes (default: unlimited)
-- `-N|--initial-network INITIAL_NETWORK`: the initial network to attach the service to
-- `-p|--password PASSWORD`: override the user-level service password
-- `-P|--post-create-network NETWORKS`: a comma-separated list of networks to attach the service container to after service creation
-- `-r|--root-password PASSWORD`: override the root-level service password
-- `-S|--post-start-network NETWORKS`: a comma-separated list of networks to attach the service container to after service start
-- `-s|--shm-size SHM_SIZE`: override shared memory size for rabbitmq docker container
+- `-c|--config-options <string>`: extra arguments to pass to the container create command
+- `-C|--custom-env <string>`: semi-colon delimited environment variables to start the service with
+- `-i|--image <string>`: the image name to start the service with
+- `-I|--image-version <string>`: the image version to start the service with
+- `-N|--initial-network <string>`: the initial network to attach the service to
+- `-m|--memory <int>`: container memory limit in megabytes (default: unlimited)
+- `-p|--password <string>`: override the user-level service password
+- `-P|--post-create-network <strings>`: a comma-separated list of networks to attach the service container to after service creation
+- `-S|--post-start-network <strings>`: a comma-separated list of networks to attach the service container to after service start
+- `-r|--root-password <string>`: override the root-level service password
+- `-s|--shm-size <string>`: override shared memory size for the service docker container
 
 Create a rabbitmq service named lollipop:
 
@@ -79,7 +77,7 @@ You can also specify the image and image version to use for the service. It *mus
 
 ```shell
 export RABBITMQ_IMAGE="rabbitmq"
-export RABBITMQ_IMAGE_VERSION="${PLUGIN_IMAGE_VERSION}"
+export RABBITMQ_IMAGE_VERSION="4.3.5-management"
 dokku rabbitmq:create lollipop
 ```
 
@@ -90,11 +88,28 @@ export RABBITMQ_CUSTOM_ENV="USER=alpha;HOST=beta"
 dokku rabbitmq:create lollipop
 ```
 
+### delete the RabbitMQ service/data/container if there are no links left
+
+```shell
+# usage
+dokku rabbitmq:destroy <service> [-f|--force]
+```
+
+flags:
+
+- `-f|--force`: force the destruction of the service
+
+Destroy the service, it's data, and the running container:
+
+```shell
+dokku rabbitmq:destroy lollipop
+```
+
 ### print the service information
 
 ```shell
 # usage
-dokku rabbitmq:info <service> [--single-info-flag]
+dokku rabbitmq:info <service> [--info-flags...]
 ```
 
 flags:
@@ -104,8 +119,8 @@ flags:
 - `--dsn`: show the service DSN
 - `--exposed-ports`: show service exposed ports
 - `--id`: show the service container id
-- `--internal-ip`: show the service internal ip
 - `--initial-network`: show the initial network being connected to
+- `--internal-ip`: show the service internal ip
 - `--links`: show the service app links
 - `--post-create-network`: show the networks to attach to after service container creation
 - `--post-start-network`: show the networks to attach to after service container start
@@ -137,7 +152,7 @@ dokku rabbitmq:info lollipop --status
 dokku rabbitmq:info lollipop --version
 ```
 
-### list all rabbitmq services
+### list all RabbitMQ services
 
 ```shell
 # usage
@@ -154,12 +169,12 @@ dokku rabbitmq:list
 
 ```shell
 # usage
-dokku rabbitmq:logs <service> [-t|--tail] <tail-num-optional>
+dokku rabbitmq:logs <service> [-t|--tail [<tail-num>]]
 ```
 
 flags:
 
-- `-t|--tail [<tail-num>]`: do not stop when end of the logs are reached and wait for additional output
+- `-t|--tail <int>`: tail the logs, optionally showing this many lines
 
 You can tail logs for a particular service:
 
@@ -173,24 +188,24 @@ By default, logs will not be tailed, but you can do this with the --tail flag:
 dokku rabbitmq:logs lollipop --tail
 ```
 
-The default tail setting is to show all logs, but an initial count can also be specified:
+By default the last 100 lines are shown, but a different count can be specified:
 
 ```shell
-dokku rabbitmq:logs lollipop --tail 5
+dokku rabbitmq:logs lollipop --tail=5
 ```
 
-### link the rabbitmq service to the app
+### link the RabbitMQ service to the app
 
 ```shell
 # usage
-dokku rabbitmq:link <service> <app> [--link-flags...]
+dokku rabbitmq:link <service> [<app>] [--link-flags...]
 ```
 
 flags:
 
-- `-a|--alias "BLUE_DATABASE"`: an alternative alias to use for linking to an app via environment variable
-- `-q|--querystring "pool=5"`: ampersand delimited querystring arguments to append to the service link
-- `-n|--no-restart "false"`: whether or not to restart the app on link (default: true)
+- `-a|--alias <string>`: an alternative alias to use for the config url exported to the app
+- `-n|--no-restart`: whether to skip restarting the app
+- `-q|--querystring <string>`: ampersand delimited querystring arguments to append to the service url
 
 A rabbitmq service can be linked to a container. This will use native docker links via the docker-options plugin. Here we link it to our `playground` app.
 
@@ -214,7 +229,7 @@ DOKKU_RABBITMQ_LOLLIPOP_PORT_5672_TCP_ADDR=172.17.0.1
 The following will be set on the linked application by default:
 
 ```
-RABBITMQ_URL=amqp://lollipop:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672/lollipop
+RABBITMQ_URL=amqp://:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672
 ```
 
 The host exposed here only works internally in docker containers. If you want your container to be reachable from outside, you should use the `expose` subcommand. Another service can be linked to your app:
@@ -233,19 +248,19 @@ dokku rabbitmq:link lollipop playground
 This will cause `RABBITMQ_URL` to be set as:
 
 ```
-amqp2://lollipop:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672/lollipop
+amqp2://:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672
 ```
 
-### unlink the rabbitmq service from the app
+### unlink the RabbitMQ service from the app
 
 ```shell
 # usage
-dokku rabbitmq:unlink <service> <app>
+dokku rabbitmq:unlink <service> [<app>] [-n|--no-restart]
 ```
 
 flags:
 
-- `-n|--no-restart "false"`: whether or not to restart the app on unlink (default: true)
+- `-n|--no-restart`: whether to skip restarting the app
 
 You can unlink a rabbitmq service:
 
@@ -280,11 +295,17 @@ Unset the post-create-network value:
 dokku rabbitmq:set lollipop post-create-network
 ```
 
+Set the keyserver a public key for backup encryption is fetched from:
+
+```shell
+dokku rabbitmq:set lollipop backup-keyserver hkp://keys.example.com
+```
+
 ### Service Lifecycle
 
 The lifecycle of each service can be managed through the following commands:
 
-### enter or run a command in a running rabbitmq service container
+### enter or run a command in a running RabbitMQ service container
 
 ```shell
 # usage
@@ -305,7 +326,7 @@ You may also run a command directly against the service. Filesystem changes will
 dokku rabbitmq:enter lollipop touch /tmp/test
 ```
 
-### expose a rabbitmq service on custom host:port if provided (random port on the 0.0.0.0 interface if otherwise unspecified)
+### expose a RabbitMQ service on custom host:port if provided (random port on the 0.0.0.0 interface if otherwise unspecified)
 
 ```shell
 # usage
@@ -324,7 +345,7 @@ Expose the service on the service's normal ports, with the first on a specified 
 dokku rabbitmq:expose lollipop 127.0.0.1:5672 4369 35197 15672
 ```
 
-### unexpose a previously exposed rabbitmq service
+### unexpose a previously exposed RabbitMQ service
 
 ```shell
 # usage
@@ -341,13 +362,13 @@ dokku rabbitmq:unexpose lollipop
 
 ```shell
 # usage
-dokku rabbitmq:promote <service> <app>
+dokku rabbitmq:promote <service> [<app>]
 ```
 
 If you have a rabbitmq service linked to an app and try to link another rabbitmq service another link environment variable will be generated automatically:
 
 ```
-DOKKU_RABBITMQ_BLUE_URL=amqp://other_service:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
+DOKKU_RABBITMQ_BLUE_URL=amqp://:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
 ```
 
 You can promote the new service to be the primary one:
@@ -361,12 +382,12 @@ dokku rabbitmq:promote other_service playground
 This will replace `RABBITMQ_URL` with the url from other_service and generate another environment variable to hold the previous value if necessary. You could end up with the following for example:
 
 ```
-RABBITMQ_URL=amqp://other_service:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
-DOKKU_RABBITMQ_BLUE_URL=amqp://other_service:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
-DOKKU_RABBITMQ_SILVER_URL=amqp://lollipop:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672/lollipop
+RABBITMQ_URL=amqp://:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
+DOKKU_RABBITMQ_BLUE_URL=amqp://:ANOTHER_PASSWORD@dokku-rabbitmq-other-service:5672/other_service
+DOKKU_RABBITMQ_SILVER_URL=amqp://:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672/lollipop
 ```
 
-### start a previously stopped rabbitmq service
+### start a previously stopped RabbitMQ service
 
 ```shell
 # usage
@@ -379,7 +400,7 @@ Start the service:
 dokku rabbitmq:start lollipop
 ```
 
-### stop a running rabbitmq service
+### stop a running RabbitMQ service
 
 ```shell
 # usage
@@ -392,7 +413,7 @@ Stop the service and removes the running container:
 dokku rabbitmq:stop lollipop
 ```
 
-### pause a running rabbitmq service
+### pause a running RabbitMQ service
 
 ```shell
 # usage
@@ -405,7 +426,7 @@ Pause the running container for the service:
 dokku rabbitmq:pause lollipop
 ```
 
-### graceful shutdown and restart of the rabbitmq service container
+### graceful shutdown and restart of the RabbitMQ service container
 
 ```shell
 # usage
@@ -427,15 +448,15 @@ dokku rabbitmq:upgrade <service> [--upgrade-flags...]
 
 flags:
 
-- `-c|--config-options "--args --go=here"`: extra arguments to pass to the container create command (default: `None`)
-- `-C|--custom-env "USER=alpha;HOST=beta"`: semi-colon delimited environment variables to start the service with
-- `-i|--image IMAGE`: the image name to start the service with
-- `-I|--image-version IMAGE_VERSION`: the image version to start the service with
-- `-N|--initial-network INITIAL_NETWORK`: the initial network to attach the service to
-- `-P|--post-create-network NETWORKS`: a comma-separated list of networks to attach the service container to after service creation
-- `-R|--restart-apps "true"`: whether or not to force an app restart (default: false)
-- `-S|--post-start-network NETWORKS`: a comma-separated list of networks to attach the service container to after service start
-- `-s|--shm-size SHM_SIZE`: override shared memory size for rabbitmq docker container
+- `-c|--config-options <string>`: extra arguments to pass to the container create command
+- `-C|--custom-env <string>`: semi-colon delimited environment variables to start the service with
+- `-i|--image <string>`: the image to upgrade the service to
+- `-I|--image-version <string>`: the image version to upgrade the service to
+- `-N|--initial-network <string>`: the initial network to attach the service to
+- `-P|--post-create-network <strings>`: a comma-separated list of networks to attach the service container to after service creation
+- `-S|--post-start-network <strings>`: a comma-separated list of networks to attach the service container to after service start
+- `-R|--restart-apps`: whether to stop and start the linked apps around the upgrade
+- `-s|--shm-size <string>`: override shared memory size for the service docker container
 
 You can upgrade an existing service to a new image or image-version:
 
@@ -447,11 +468,11 @@ dokku rabbitmq:upgrade lollipop
 
 Service scripting can be executed using the following commands:
 
-### list all rabbitmq service links for a given app
+### list all RabbitMQ service links for a given app
 
 ```shell
 # usage
-dokku rabbitmq:app-links <app>
+dokku rabbitmq:app-links [<app>]
 ```
 
 List all rabbitmq services that are linked to the `playground` app.
@@ -460,7 +481,7 @@ List all rabbitmq services that are linked to the `playground` app.
 dokku rabbitmq:app-links playground
 ```
 
-### check if the rabbitmq service exists
+### check if the RabbitMQ service exists
 
 ```shell
 # usage
@@ -473,11 +494,11 @@ Here we check if the lollipop rabbitmq service exists.
 dokku rabbitmq:exists lollipop
 ```
 
-### check if the rabbitmq service is linked to an app
+### check if the RabbitMQ service is linked to an app
 
 ```shell
 # usage
-dokku rabbitmq:linked <service> <app>
+dokku rabbitmq:linked <service> [<app>]
 ```
 
 Here we check if the lollipop rabbitmq service is linked to the `playground` app.
@@ -486,7 +507,7 @@ Here we check if the lollipop rabbitmq service is linked to the `playground` app
 dokku rabbitmq:linked lollipop playground
 ```
 
-### list all apps linked to the rabbitmq service
+### list all apps linked to the RabbitMQ service
 
 ```shell
 # usage
@@ -497,45 +518,6 @@ List all apps linked to the `lollipop` rabbitmq service.
 
 ```shell
 dokku rabbitmq:links lollipop
-```
-### Backups
-
-Datastore backups are supported via AWS S3 and S3 compatible services like [minio](https://github.com/minio/minio).
-
-You may skip the `backup-auth` step if your dokku install is running within EC2 and has access to the bucket via an IAM profile. In that case, use the `--use-iam` option with the `backup` command.
-
-If both passphrase and public key forms of encryption are set, the public key encryption will take precedence.
-
-The underlying core backup script is present [here](https://github.com/dokku/docker-s3backup/blob/main/backup.sh).
-
-Backups can be performed using the backup commands:
-
-### set GPG Public Key encryption for all future backups of rabbitmq service
-
-```shell
-# usage
-dokku rabbitmq:backup-set-public-key-encryption <service> <public-key-id>
-```
-
-Set the `GPG` Public Key for encrypting backups:
-
-```shell
-dokku rabbitmq:backup-set-public-key-encryption lollipop
-```
-
-This method currently requires the <public-key-id> to be present on the keyserver `keyserver.ubuntu.com`:
-
-### unset GPG Public Key encryption for future backups of the rabbitmq service
-
-```shell
-# usage
-dokku rabbitmq:backup-unset-public-key-encryption <service>
-```
-
-Unset the `GPG` Public Key encryption for backups:
-
-```shell
-dokku rabbitmq:backup-unset-public-key-encryption lollipop
 ```
 
 ### Disabling `docker image pull` calls

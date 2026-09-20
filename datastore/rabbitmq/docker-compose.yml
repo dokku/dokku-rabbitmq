@@ -1,0 +1,66 @@
+---
+services:
+  rabbitmq:
+    image: "{{ .Image }}:{{ .ImageVersion }}"
+
+    # the image creates the user and the vhost from these on first boot
+    environment:
+      RABBITMQ_DEFAULT_PASS: "{{ .Secret.password }}"
+      RABBITMQ_DEFAULT_USER: "{{ .ServiceName }}"
+      RABBITMQ_DEFAULT_VHOST: "{{ .Database }}"
+
+    volumes:
+      # the config is mounted as a file rather than a directory, so it has to
+      # exist before the container is created: docker makes a missing bind
+      # source a directory, and rabbitmq would then find a directory where it
+      # expects its configuration. Seeding it is what creates it.
+      - type: bind
+        source: "{{ .HostRoot }}/config/rabbitmq.conf"
+        target: /etc/rabbitmq/rabbitmq.conf
+      - type: bind
+        source: "{{ .HostRoot }}/data"
+        target: /var/lib/rabbitmq
+
+    configs:
+      - source: rabbitmq_conf
+        target: /etc/rabbitmq/rabbitmq.conf
+
+    ports:
+      - name: native
+        target: 5672
+        primary: true
+      - name: epmd
+        target: 4369
+      - name: distribution
+        target: 35197
+      - name: management
+        target: 15672
+
+configs:
+  rabbitmq_conf:
+    # seeded once and never rewritten, so an operator's settings survive. The
+    # bash plugin creates this empty, which is a file with nothing to say about
+    # why it is there.
+    content: |
+      # settings for this service go here. The file is created once and is not
+      # rewritten, so what is added here survives a restart or an upgrade.
+      # https://www.rabbitmq.com/docs/configure#config-file
+
+x-dokku:
+  plugin: rabbitmq
+  title: RabbitMQ
+  scheme: amqp
+  alias: RABBITMQ
+
+  dsn: "{{ .Scheme }}://{{ .ServiceName }}:{{ .Secret.password }}@{{ .Host }}:{{ .Port.native }}/{{ .Database }}"
+  wait: native
+
+  secrets:
+    password:
+      file: PASSWORD
+      length: 32
+      env: SERVICE_PASSWORD
+
+  # no commands: rabbitmq holds messages rather than data to dump, and the bash
+  # plugin implements none of connect, export or import. Clone and the backup
+  # family fall out of that.
