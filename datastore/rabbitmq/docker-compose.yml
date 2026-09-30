@@ -13,10 +13,12 @@ services:
       # the config is mounted as a file rather than a directory, so it has to
       # exist before the container is created: docker makes a missing bind
       # source a directory, and rabbitmq would then find a directory where it
-      # expects its configuration. Seeding it is what creates it.
+      # expects its configuration. Seeding it is what creates it, and marking
+      # it a file is what stops the tool making a directory there first.
       - type: bind
         source: "{{ .HostRoot }}/config/rabbitmq.conf"
         target: /etc/rabbitmq/rabbitmq.conf
+        x-file: true
       - type: bind
         source: "{{ .HostRoot }}/data"
         target: /var/lib/rabbitmq
