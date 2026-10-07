@@ -18,6 +18,7 @@ sudo dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git --name rab
 
 ```
 rabbitmq:app-links [<app>]                         # list all RabbitMQ service links for a given app
+rabbitmq:certificate <service>                     # print the certificate the RabbitMQ service encrypts connections with
 rabbitmq:create <service> [--create-flags...]      # create a RabbitMQ service
 rabbitmq:destroy <service> [-f|--force]            # delete the RabbitMQ service/data/container if there are no links left
 rabbitmq:enter <service>                           # enter or run a command in a running RabbitMQ service container
@@ -33,6 +34,7 @@ rabbitmq:mount [--replace] <service> <source:container-dir[:options]>... # mount
 rabbitmq:pause <service>                           # pause a running RabbitMQ service
 rabbitmq:promote <service> [<app>]                 # promote service <service> as RABBITMQ_URL in <app>
 rabbitmq:reexpose <service>                        # reexpose a RabbitMQ service, applying its expose settings
+rabbitmq:reset <service> [-f|--force]              # delete all data in the RabbitMQ service, keeping the service and its links
 rabbitmq:restart <service>                         # graceful shutdown and restart of the RabbitMQ service container
 rabbitmq:set <service> <key> <value>               # set or clear a property for a service
 rabbitmq:start <service>                           # start a previously stopped RabbitMQ service
@@ -178,10 +180,13 @@ flags:
 - `--backup-encryption-fingerprint`: show a sha256 fingerprint of the stored backup passphrase
 - `--backup-endpoint-url`: show the s3-compatible endpoint backups are shipped to
 - `--backup-keyserver`: show the keyserver backup public keys are fetched from
+- `--backup-mailto`: show who cron mails the output of scheduled backups to in place of the global MAILTO
+- `--backup-object-name`: show the name backups are uploaded under in place of the default
 - `--backup-public-key-id`: show the gpg public key id backups are encrypted with
 - `--backup-schedule`: show the cron schedule backups run on
 - `--backup-signature-version`: show the signature version backups authenticate with
 - `--backup-storage-class`: show the s3 storage class backups are uploaded with
+- `--backup-timestamp`: show whether backups are uploaded under a key ending in the time they started
 - `--backup-use-iam`: show whether scheduled backups authenticate with an instance role
 - `--config-dir`: show the service configuration directory
 - `--config-options`: show the config options the service container is run with
@@ -474,6 +479,36 @@ Go back to uploading backups with the bucket's default storage class:
 dokku rabbitmq:set lollipop backup-storage-class
 ```
 
+Upload backups under a name of your own rather than rabbitmq-lollipop:
+
+```shell
+dokku rabbitmq:set lollipop backup-object-name db/latest
+```
+
+Upload every backup to the same key, without a timestamp, so bucket versioning and lifecycle rules can keep and rotate them:
+
+```shell
+dokku rabbitmq:set lollipop backup-timestamp false
+```
+
+Go back to timestamped backups:
+
+```shell
+dokku rabbitmq:set lollipop backup-timestamp
+```
+
+Mail the output of scheduled backups to a comma-separated list of email addresses or local users rather than to the global cron `MAILTO`. Requires a dokku version that reads json entries from the cron-entries plugin trigger, and a mail transfer agent on the host:
+
+```shell
+dokku rabbitmq:set lollipop backup-mailto ops@example.com,dba@example.com
+```
+
+Go back to mailing scheduled backup output to the global cron `MAILTO`:
+
+```shell
+dokku rabbitmq:set lollipop backup-mailto
+```
+
 Cap the container log at a size of your own rather than the one it inherits:
 
 ```shell
@@ -558,7 +593,7 @@ Go back to publishing the exposed ports through an ambassador container:
 dokku rabbitmq:set lollipop expose-mode
 ```
 
-Mount one of the definition's volumes at another path in the container, for an image that keeps its data somewhere else. Each volume is named by where it lives in the service directory (config/rabbitmq.conf, data), and several are separated by spaces:
+Mount one of the definition's volumes at another path in the container, for an image that keeps its data somewhere else. Each volume is named by where it lives in the service directory (config/rabbitmq.conf, data, certs, config/tls.conf), and several are separated by spaces:
 
 ```shell
 dokku rabbitmq:set lollipop volume-targets data=/srv/rabbitmq
@@ -698,13 +733,13 @@ flags:
 Expose the service on the service's normal ports, allowing access to it from the public interface (`0.0.0.0`):
 
 ```shell
-dokku rabbitmq:expose lollipop 5672 4369 35197 15672
+dokku rabbitmq:expose lollipop 5672 4369 35197 15672 5671 15671
 ```
 
 Expose the service on the service's normal ports, with the first on a specified ip address (127.0.0.1):
 
 ```shell
-dokku rabbitmq:expose lollipop 127.0.0.1:5672 4369 35197 15672
+dokku rabbitmq:expose lollipop 127.0.0.1:5672 4369 35197 15672 5671 15671
 ```
 
 Expose the service on random ports on a single address, and only to clients in one network:
@@ -884,7 +919,7 @@ flags:
 - `-P|--post-create-network <strings>`: a comma-separated list of networks to attach the service container to after service creation
 - `-S|--post-start-network <strings>`: a comma-separated list of networks to attach the service container to after service start
 - `--restart <string>`: the docker restart policy to run the service container with (default: always)
-- `-R|--restart-apps`: whether to stop and start the linked apps around the upgrade
+- `-R|--restart-apps`: whether to stop and start the linked apps around the upgrade, required for one that migrates the data
 - `-s|--shm-size <string>`: override shared memory size for the service docker container
 - `--volume <stringArray>`: a host path or docker volume to mount into the service container, as <source>:<container-dir>[:<options>], repeatable
 - `--volume-target <stringArray>`: mount one of the definition's volumes at another container path, as <volume>=<container-dir>, repeatable
@@ -978,6 +1013,58 @@ dokku rabbitmq:links lollipop
 
 Renaming an app moves its link onto the new name, and cloning an app links the clone as well as the original.
 
+### Data Management
+
+The underlying service data can be imported and exported with the following commands:
+
+### delete all data in the RabbitMQ service, keeping the service and its links
+
+```shell
+# usage
+dokku rabbitmq:reset <service> [-f|--force]
+```
+
+flags:
+
+- `-f|--force`: reset the service without asking for its name first
+
+Delete all data in the service, leaving it as empty as a newly created one. The service, its credentials, and the apps it is linked to are kept, so linked apps do not need to be relinked. Connections the apps hold open may be closed.
+
+```shell
+dokku rabbitmq:reset lollipop
+```
+
+The service name is asked for before anything is deleted, unless --force is given:
+
+```shell
+dokku rabbitmq:reset lollipop --force
+```
+
+### Custom Commands
+
+This datastore adds the following commands of its own:
+
+### print the certificate the RabbitMQ service encrypts connections with
+
+```shell
+# usage
+dokku rabbitmq:certificate <service>
+```
+
+Print the certificate the RabbitMQ service encrypts connections with:
+
+> NOTE: the service must be running
+
+```shell
+dokku rabbitmq:certificate lollipop
+```
+
+Save it to verify the server from a client off the host:
+
+```shell
+dokku rabbitmq:certificate lollipop > server.crt
+```
+
 ### Limiting where and to whom a service is exposed
 
 An exposed service's ports are published on every interface unless they are given an address of their own. To publish them on one address instead, set the service's `port-bind-address` property with `dokku rabbitmq:set`, and to accept connections only from clients in one IP address or CIDR, set its `port-source-range` property. Either reaches a running service with `dokku rabbitmq:reexpose`, which leaves the service running when its ports are published through an ambassador.
@@ -1010,8 +1097,49 @@ Each volume a service mounts is named by the directory it lives in under the ser
 | --- | --- | --- |
 | rabbitmq | config/rabbitmq.conf | `/etc/rabbitmq/rabbitmq.conf` |
 | rabbitmq | data | `/var/lib/rabbitmq` |
+| rabbitmq | certs | `/certs` |
+| rabbitmq | config/tls.conf | `/etc/rabbitmq/conf.d/20-dokku-tls.conf` |
 
 Moving a volume changes where it is mounted, not where the image reads and writes. The datastore's own commands and the paths it is started with follow the volume, but an image that keeps writing to its own path writes into the container rather than into the volume, and what it writes is lost when the container is rebuilt, so only move a volume to where the image expects its data. The data stays in the same directory on the host, and a move reaches the container the next time one is built, so use `dokku rabbitmq:stop` and then `dokku rabbitmq:start` on a running service. An upgrade onto a definition that does not mount a volume the service moved is refused until the move is cleared or replaced.
+
+### Encrypting connections with TLS
+
+Every RabbitMQ service is created with a self-signed certificate, and serves amqps on port 5671 and the management interface over https on port 15671. The plain listeners on ports 5672 and 15672 are kept beside them, so a linked app keeps the dsn it was given, and a client asks for an encrypted connection by connecting to the tls port. The certificate and its key are kept in `/var/lib/dokku/services/rabbitmq/lollipop/certs`, and are kept when the service is rebuilt or upgraded. To check that the client is talking to this service, save its certificate and have the client verify the server with it. The certificate names no host, so the client verifies it against the certificate rather than against the hostname it connects to:
+
+```shell
+dokku rabbitmq:certificate lollipop > server.crt
+```
+
+```
+amqps://lollipop:PASSWORD@rabbitmq.example.com:5671/lollipop
+```
+
+A service created before tls was served has its certificate made the next time its container is. The container is kept by a restart, so stop and start the service instead:
+
+```shell
+dokku rabbitmq:stop lollipop
+dokku rabbitmq:start lollipop
+```
+
+A service exposed before then keeps the ports it was exposed on, and its tls ports are left unexposed. To expose them as well, unexpose the service and expose it again:
+
+```shell
+dokku rabbitmq:unexpose lollipop
+dokku rabbitmq:expose lollipop
+```
+
+To use a certificate of your own, write it and its key over the ones the service was created with as root, and restart the service. Writing over the files rather than replacing them keeps the owner and mode the server needs to read its key:
+
+```
+sudo sh -c 'cat server.crt > /var/lib/dokku/services/rabbitmq/lollipop/certs/server.crt'
+sudo sh -c 'cat server.key > /var/lib/dokku/services/rabbitmq/lollipop/certs/server.key'
+```
+
+```shell
+dokku rabbitmq:restart lollipop
+```
+
+The settings that turn tls on are kept in `/var/lib/dokku/services/rabbitmq/lollipop/config/tls.conf`, which is created once and is not rewritten.
 
 ### Disabling `docker image pull` calls
 
