@@ -8,6 +8,10 @@ services:
       RABBITMQ_DEFAULT_PASS: "{{ .Secret.password }}"
       RABBITMQ_DEFAULT_USER: "{{ .ServiceName }}"
       RABBITMQ_DEFAULT_VHOST: "{{ .Database }}"
+      # where the tls settings find the certificate. rabbitmq expands it into
+      # its config file at boot, so the file can be seeded once and still
+      # follow a moved certs volume
+      DOKKU_RABBITMQ_CERTS: "{{ .Target.certs }}"
 
     volumes:
       # the config is mounted as a file rather than a directory, so it has to
@@ -22,11 +26,26 @@ services:
       - type: bind
         source: "{{ .HostRoot }}/data"
         target: /var/lib/rabbitmq
+      - type: bind
+        source: "{{ .HostRoot }}/certs"
+        target: /certs
+      # rabbitmq reads every file in conf.d beside rabbitmq.conf, so tls is
+      # turned on by a file of its own and the operator's file is left alone. A
+      # service made before this has neither the file nor the certificate, and
+      # both are made the next time its container is
+      - type: bind
+        source: "{{ .HostRoot }}/config/tls.conf"
+        target: /etc/rabbitmq/conf.d/20-dokku-tls.conf
+        x-file: true
 
     configs:
       - source: rabbitmq_conf
         target: /etc/rabbitmq/rabbitmq.conf
+      - source: tls_conf
+        target: /etc/rabbitmq/conf.d/20-dokku-tls.conf
 
+    # the tls ports come last, so a service exposed before they existed keeps
+    # each of its host ports on the container port it was exposed on
     ports:
       - name: native
         target: 5672
@@ -37,6 +56,10 @@ services:
         target: 35197
       - name: management
         target: 15672
+      - name: amqps
+        target: 5671
+      - name: management_tls
+        target: 15671
 
 configs:
   rabbitmq_conf:
@@ -47,6 +70,24 @@ configs:
       # settings for this service go here. The file is created once and is not
       # rewritten, so what is added here survives a restart or an upgrade.
       # https://www.rabbitmq.com/docs/configure#config-file
+
+  tls_conf:
+    # the plain listeners are kept beside the tls ones, so a linked app keeps
+    # the dsn it was given. Setting a management tls port turns the plain one
+    # off unless it is named as well, which is why 15672 is.
+    content: |
+      # tls for this service, served beside the plain listeners. The file is
+      # created once and is not rewritten.
+      # https://www.rabbitmq.com/docs/ssl
+      listeners.ssl.default = 5671
+      ssl_options.certfile = $(DOKKU_RABBITMQ_CERTS)/server.crt
+      ssl_options.keyfile = $(DOKKU_RABBITMQ_CERTS)/server.key
+      ssl_options.verify = verify_none
+      ssl_options.fail_if_no_peer_cert = false
+      management.tcp.port = 15672
+      management.ssl.port = 15671
+      management.ssl.certfile = $(DOKKU_RABBITMQ_CERTS)/server.crt
+      management.ssl.keyfile = $(DOKKU_RABBITMQ_CERTS)/server.key
 
 x-dokku:
   plugin: rabbitmq
@@ -63,6 +104,96 @@ x-dokku:
       length: 32
       env: SERVICE_PASSWORD
 
-  # no commands: rabbitmq holds messages rather than data to dump, and the bash
-  # plugin implements none of connect, export or import. Clone and the backup
+  hooks:
+    pre_create:
+      # the certificate, made before the service runs rather than after. It is
+      # left alone once it exists, so a service keeps the identity it was
+      # created with rather than being given a new one each time its container
+      # is remade. A service created before there was one has it made the
+      # next time its container is, since its certs directory is missing.
+      user: "0"
+      entrypoint: ""
+      volumes:
+        - type: bind
+          source: "{{ .HostRoot }}/certs"
+          target: /certs
+      exec:
+        - sh
+        - -c
+        # rabbitmq runs as 999 and is the only one that needs to read the key.
+        # The directory holding them stays with dokku, so destroy can still
+        # unlink what is inside it
+        - >-
+          test -f /certs/server.key ||
+          (openssl req -new -newkey rsa:4096 -x509 -days 365000 -nodes
+          -out /certs/server.crt -keyout /certs/server.key -batch >/dev/null 2>&1);
+          chown 999:999 /certs/server.key /certs/server.crt &&
+          chmod 600 /certs/server.key && chmod 644 /certs/server.crt
+
+  # the certificate the server was started with, so that a client off the host
+  # can verify it is talking to this service. Read from the running container
+  # rather than the host, which keeps it following a moved certs volume
+  custom_commands:
+    certificate:
+      description: print the certificate the {{.Title}} service encrypts connections with
+      documentation: |
+        print the certificate the {{.Title}} service encrypts connections with
+        > NOTE: the service must be running
+        dokku {{.CommandPrefix}}:certificate lollipop
+        save it to verify the server from a client off the host
+        dokku {{.CommandPrefix}}:certificate lollipop > server.crt
+      exec: ["cat", "{{ .Target.certs }}/server.crt"]
+
+  # written the way a command's documentation is: every sentence ends in a
+  # period, since prose lines run together, and inline code is quoted
+  documentation:
+    - title: Encrypting connections with TLS
+      body: |
+        every {{.Title}} service is created with a self-signed certificate, and serves amqps on port 5671 and the management interface over https on port 15671.
+        the plain listeners on ports 5672 and 15672 are kept beside them, so a linked app keeps the dsn it was given, and a client asks for an encrypted connection by connecting to the tls port.
+        the certificate and its key are kept in '/var/lib/dokku/services/{{.CommandPrefix}}/lollipop/certs', and are kept when the service is rebuilt or upgraded.
+        to check that the client is talking to this service, save its certificate and have the client verify the server with it.
+        the certificate names no host, so the client verifies it against the certificate rather than against the hostname it connects to:
+        dokku {{.CommandPrefix}}:certificate lollipop > server.crt
+            amqps://lollipop:PASSWORD@rabbitmq.example.com:5671/lollipop
+        a service created before tls was served has its certificate made the next time its container is.
+        the container is kept by a restart, so stop and start the service instead:
+        dokku {{.CommandPrefix}}:stop lollipop
+        dokku {{.CommandPrefix}}:start lollipop
+        a service exposed before then keeps the ports it was exposed on, and its tls ports are left unexposed.
+        to expose them as well, unexpose the service and expose it again:
+        dokku {{.CommandPrefix}}:unexpose lollipop
+        dokku {{.CommandPrefix}}:expose lollipop
+        to use a certificate of your own, write it and its key over the ones the service was created with as root, and restart the service.
+        writing over the files rather than replacing them keeps the owner and mode the server needs to read its key:
+            sudo sh -c 'cat server.crt > /var/lib/dokku/services/{{.CommandPrefix}}/lollipop/certs/server.crt'
+            sudo sh -c 'cat server.key > /var/lib/dokku/services/{{.CommandPrefix}}/lollipop/certs/server.key'
+        dokku {{.CommandPrefix}}:restart lollipop
+        the settings that turn tls on are kept in '/var/lib/dokku/services/{{.CommandPrefix}}/lollipop/config/tls.conf', which is created once and is not rewritten.
+
+  # no connect, export or import: rabbitmq holds messages rather than data to
+  # dump, and the bash plugin implements none of them. Clone and the backup
   # family fall out of that.
+  commands:
+    # every vhost is deleted, which takes the queues and the messages in them,
+    # the exchanges, bindings, policies and parameters with it, and the
+    # service's own is made again. The image only grants the account its vhost
+    # on first boot, so the permissions are granted again here. The accounts
+    # themselves are kept, so the password a linked app connects with still
+    # works; the connections it holds are closed with the vhost.
+    reset:
+      exec:
+        - sh
+        - -c
+        - |
+          set -e
+          vhost="$1"
+          user="$2"
+          rabbitmqctl -q -s list_vhosts name | while IFS= read -r name; do
+            rabbitmqctl -q delete_vhost "$name"
+          done
+          rabbitmqctl -q add_vhost "$vhost"
+          rabbitmqctl -q set_permissions -p "$vhost" "$user" ".*" ".*" ".*"
+        - dokku-rabbitmq-reset
+        - "{{ .Database }}"
+        - "{{ .ServiceName }}"
