@@ -461,52 +461,34 @@ Unset the post-create-network value:
 dokku rabbitmq:set lollipop post-create-network
 ```
 
-Set the keyserver a public key for backup encryption is fetched from:
+Limit the container to 512 megabytes of memory, or go back to no limit with 0:
 
 ```shell
-dokku rabbitmq:set lollipop backup-keyserver hkp://keys.example.com
+dokku rabbitmq:set lollipop memory 512
 ```
 
-Set the s3 storage class backups are uploaded with, one of `STANDARD,` `REDUCED_REDUNDANCY,` `STANDARD_IA,` `ONEZONE_IA,` `INTELLIGENT_TIERING,` `GLACIER,` `DEEP_ARCHIVE` or `GLACIER_IR`:
+Give the container a shared memory size of its own:
 
 ```shell
-dokku rabbitmq:set lollipop backup-storage-class STANDARD_IA
+dokku rabbitmq:set lollipop shm-size 256m
 ```
 
-Go back to uploading backups with the bucket's default storage class:
+Start the container with semi-colon delimited environment variables of your own:
 
 ```shell
-dokku rabbitmq:set lollipop backup-storage-class
+dokku rabbitmq:set lollipop custom-env "TZ=UTC;LANG=C.UTF-8"
 ```
 
-Upload backups under a name of your own rather than rabbitmq-lollipop:
+Pass extra arguments to the process the service container runs. These are not docker flags, so use mount for mounts. The value follows -- so that its leading dash is not read as a flag:
 
 ```shell
-dokku rabbitmq:set lollipop backup-object-name db/latest
+dokku rabbitmq:set lollipop config-options -- "<config-options...>"
 ```
 
-Upload every backup to the same key, without a timestamp, so bucket versioning and lifecycle rules can keep and rotate them:
+Go back to running the process with the datastore's own arguments alone:
 
 ```shell
-dokku rabbitmq:set lollipop backup-timestamp false
-```
-
-Go back to timestamped backups:
-
-```shell
-dokku rabbitmq:set lollipop backup-timestamp
-```
-
-Mail the output of scheduled backups to a comma-separated list of email addresses or local users rather than to the global cron `MAILTO`. Requires a dokku version that reads json entries from the cron-entries plugin trigger, and a mail transfer agent on the host:
-
-```shell
-dokku rabbitmq:set lollipop backup-mailto ops@example.com,dba@example.com
-```
-
-Go back to mailing scheduled backup output to the global cron `MAILTO`:
-
-```shell
-dokku rabbitmq:set lollipop backup-mailto
+dokku rabbitmq:set lollipop config-options
 ```
 
 Cap the container log at a size of your own rather than the one it inherits:
@@ -605,7 +587,7 @@ Go back to mounting every volume where the definition does:
 dokku rabbitmq:set lollipop volume-targets
 ```
 
-> NOTE: a log setting, a restart policy or a volume target reaches the container the next time one is built. rabbitmq:restart keeps the container it has, so use rabbitmq:stop and then rabbitmq:start on a service that is already running.
+> NOTE: a network, a log setting, a restart policy, a volume target, the config options, the custom environment, the memory limit or the shared memory size reaches the container the next time one is built, and set warns that it does. rabbitmq:restart keeps the container it has, so use rabbitmq:stop and then rabbitmq:start on a service that is already running.
 > NOTE: a port-bind-address or port-source-range reaches an exposed service with rabbitmq:reexpose, which replaces the container publishing its ports and leaves the service container running.
 > NOTE: an expose-mode, or a port-bind-address for a service exposed directly, reaches an exposed service with rabbitmq:reexpose, which stops and starts a running service after asking. It also reaches the service the next time it is restarted, or stopped and started.
 
@@ -916,6 +898,7 @@ flags:
 - `--log-driver <string>`: the docker logging driver to run the service container with (default: the daemon's own)
 - `--log-opt <strings>`: a comma-separated list of key=value docker log options for the service container
 - `-m|--memory <int>`: container memory limit in megabytes, 0 for unlimited
+- `--no-migrate`: place the service on the --definition named with its data left where it is, for a service whose data that definition already reads
 - `-P|--post-create-network <strings>`: a comma-separated list of networks to attach the service container to after service creation
 - `-S|--post-start-network <strings>`: a comma-separated list of networks to attach the service container to after service start
 - `--restart <string>`: the docker restart policy to run the service container with (default: always)
@@ -1064,6 +1047,29 @@ Save it to verify the server from a client off the host:
 ```shell
 dokku rabbitmq:certificate lollipop > server.crt
 ```
+
+### Service properties
+
+Every setting a service has after it is created, other than its image, its passwords, its mounts and its backup schedule, each of which has a command of its own, is changed with `dokku rabbitmq:set lollipop <key> <value>`, and cleared by giving no value. `dokku rabbitmq:info lollipop` reports each of them, with a credential reported as a fingerprint rather than its value. A setting the container is made with only reaches it once the container is built again, and `set` warns when that is the case: `dokku rabbitmq:restart` keeps the container the service has, so use `dokku rabbitmq:stop` and then `dokku rabbitmq:start`.
+
+| Property | Description | Takes effect |
+| --- | --- | --- |
+| `initial-network` | the network the service container is attached to when it is made | after `rabbitmq:stop` and `rabbitmq:start` |
+| `post-create-network` | a comma-separated list of networks the container is attached to once it is made | after `rabbitmq:stop` and `rabbitmq:start` |
+| `post-start-network` | a comma-separated list of networks the container is attached to once it is started | after `rabbitmq:stop` and `rabbitmq:start` |
+| `log-driver` | the docker logging driver the container is run with | after `rabbitmq:stop` and `rabbitmq:start` |
+| `log-opt` | a comma-separated list of docker log options the container is run with | after `rabbitmq:stop` and `rabbitmq:start` |
+| `restart-policy` | the docker restart policy the container is run with | after `rabbitmq:stop` and `rabbitmq:start` |
+| `wait-timeout` | the seconds the service is waited on to become ready | immediately |
+| `port-bind-address` | the address exposed ports without one of their own are published on | after `rabbitmq:reexpose` |
+| `port-source-range` | the only IP address or CIDR the exposed ports accept clients from | after `rabbitmq:reexpose` |
+| `expose-host` | the host the exposed dsn names | immediately |
+| `expose-mode` | `direct` to publish the exposed ports on the service container rather than through an ambassador | after `rabbitmq:reexpose` |
+| `volume-targets` | the container paths the definition's volumes are mounted at in place of its own | after `rabbitmq:stop` and `rabbitmq:start` |
+| `config-options` | extra arguments for the process the service container runs | after `rabbitmq:stop` and `rabbitmq:start` |
+| `custom-env` | semicolon-delimited environment variables the container is run with | after `rabbitmq:stop` and `rabbitmq:start` |
+| `memory` | the container memory limit in megabytes, `0` for no limit | after `rabbitmq:stop` and `rabbitmq:start` |
+| `shm-size` | the shared memory size of the container, such as `64m` | after `rabbitmq:stop` and `rabbitmq:start` |
 
 ### Limiting where and to whom a service is exposed
 
