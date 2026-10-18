@@ -104,6 +104,18 @@ x-dokku:
       length: 32
       env: SERVICE_PASSWORD
 
+      # the image only reads RABBITMQ_DEFAULT_PASS when it makes the user on
+      # first boot, so the user is given its new password by the server
+      change:
+        exec:
+          - sh
+          - -c
+          - rabbitmqctl -q change_password "$1" "$NEW_PASSWORD"
+          - dokku-rabbitmq-change-password
+          - "{{ .ServiceName }}"
+        env:
+          NEW_PASSWORD: "{{ .NewSecret }}"
+
   hooks:
     pre_create:
       # the certificate, made before the service runs rather than after. It is
