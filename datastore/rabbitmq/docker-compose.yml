@@ -95,8 +95,63 @@ x-dokku:
   scheme: amqp
   alias: RABBITMQ
 
-  dsn: "{{ .Scheme }}://{{ .ServiceName }}:{{ .Secret.password }}@{{ .Host }}:{{ .Port.native }}/{{ .Database }}"
+  dsn: "{{ .Scheme }}://{{ .Username }}:{{ .Password }}@{{ .Host }}:{{ .Port.native }}/{{ .Database }}"
   wait: native
+
+  # the vhosts and users a service holds beside its own, a database being a
+  # vhost here as it is in the dsn. Every user is given every permission on
+  # each vhost the service holds, and on each one made later, but none of the
+  # tags that would let it manage the server.
+  databases:
+    create:
+      exec:
+        - sh
+        - -c
+        - |
+          set -e
+          rabbitmqctl -q add_vhost "$1"
+          for user in $2; do
+            rabbitmqctl -q set_permissions -p "$1" "$user" ".*" ".*" ".*"
+          done
+        - dokku-rabbitmq-create-database
+        - "{{ .Args.database }}"
+        - "{{ .Args.users }}"
+    destroy:
+      exec: ["rabbitmqctl", "-q", "delete_vhost", "{{ .Args.database }}"]
+
+  users:
+    default: "{{ .ServiceName }}"
+    secret: password
+    reserved: [guest]
+    create:
+      exec:
+        - sh
+        - -c
+        - |
+          set -e
+          rabbitmqctl -q add_user "$1" "$NEW_PASSWORD"
+          for vhost in $2; do
+            rabbitmqctl -q set_permissions -p "$vhost" "$1" ".*" ".*" ".*"
+          done
+        - dokku-rabbitmq-create-user
+        - "{{ .Args.user }}"
+        - "{{ .Args.databases }}"
+      env:
+        NEW_PASSWORD: "{{ .NewSecret }}"
+    destroy:
+      exec: ["rabbitmqctl", "-q", "delete_user", "{{ .Args.user }}"]
+
+    # the same as the password's own change, given the user to change
+    change:
+      exec:
+        - sh
+        - -c
+        - rabbitmqctl -q change_password "$1" "$NEW_PASSWORD"
+        - dokku-rabbitmq-change-password
+        - "{{ .Args.user }}"
+      env:
+        NEW_PASSWORD: "{{ .NewSecret }}"
+
 
   secrets:
     password:
@@ -151,9 +206,9 @@ x-dokku:
       documentation: |
         print the certificate the {{.Title}} service encrypts connections with
         > NOTE: the service must be running
-        dokku {{.CommandPrefix}}:certificate lollipop
+        dokku {{.Command "certificate"}} lollipop
         save it to verify the server from a client off the host
-        dokku {{.CommandPrefix}}:certificate lollipop > server.crt
+        dokku {{.Command "certificate"}} lollipop > server.crt
       exec: ["cat", "{{ .Target.certs }}/server.crt"]
 
   # written the way a command's documentation is: every sentence ends in a
@@ -166,21 +221,21 @@ x-dokku:
         the certificate and its key are kept in '/var/lib/dokku/services/{{.CommandPrefix}}/lollipop/certs', and are kept when the service is rebuilt or upgraded.
         to check that the client is talking to this service, save its certificate and have the client verify the server with it.
         the certificate names no host, so the client verifies it against the certificate rather than against the hostname it connects to:
-        dokku {{.CommandPrefix}}:certificate lollipop > server.crt
+        dokku {{.Command "certificate"}} lollipop > server.crt
             amqps://lollipop:PASSWORD@rabbitmq.example.com:5671/lollipop
         a service created before tls was served has its certificate made the next time its container is.
         the container is kept by a restart, so stop and start the service instead:
-        dokku {{.CommandPrefix}}:stop lollipop
-        dokku {{.CommandPrefix}}:start lollipop
+        dokku {{.Command "stop"}} lollipop
+        dokku {{.Command "start"}} lollipop
         a service exposed before then keeps the ports it was exposed on, and its tls ports are left unexposed.
         to expose them as well, unexpose the service and expose it again:
-        dokku {{.CommandPrefix}}:unexpose lollipop
-        dokku {{.CommandPrefix}}:expose lollipop
+        dokku {{.Command "unexpose"}} lollipop
+        dokku {{.Command "expose"}} lollipop
         to use a certificate of your own, write it and its key over the ones the service was created with as root, and restart the service.
         writing over the files rather than replacing them keeps the owner and mode the server needs to read its key:
             sudo sh -c 'cat server.crt > /var/lib/dokku/services/{{.CommandPrefix}}/lollipop/certs/server.crt'
             sudo sh -c 'cat server.key > /var/lib/dokku/services/{{.CommandPrefix}}/lollipop/certs/server.key'
-        dokku {{.CommandPrefix}}:restart lollipop
+        dokku {{.Command "restart"}} lollipop
         the settings that turn tls on are kept in '/var/lib/dokku/services/{{.CommandPrefix}}/lollipop/config/tls.conf', which is created once and is not rewritten.
 
   # no connect, export or import: rabbitmq holds messages rather than data to
@@ -189,10 +244,13 @@ x-dokku:
   commands:
     # every vhost is deleted, which takes the queues and the messages in them,
     # the exchanges, bindings, policies and parameters with it, and the
-    # service's own is made again. The image only grants the account its vhost
-    # on first boot, so the permissions are granted again here. The accounts
-    # themselves are kept, so the password a linked app connects with still
-    # works; the connections it holds are closed with the vhost.
+    # service's own is made again. The vhosts made in the service are kept,
+    # since other apps may be linked to them, and a reset of one of those
+    # empties that vhost alone. The image only grants the account its vhost on
+    # first boot, so the permissions of every user the service holds are
+    # granted again here. The accounts themselves are kept, so the password a
+    # linked app connects with still works; the connections it holds are
+    # closed with the vhost.
     reset:
       exec:
         - sh
@@ -200,12 +258,27 @@ x-dokku:
         - |
           set -e
           vhost="$1"
-          user="$2"
-          rabbitmqctl -q -s list_vhosts name | while IFS= read -r name; do
-            rabbitmqctl -q delete_vhost "$name"
-          done
+          if [ "$vhost" = "$2" ]; then
+            rabbitmqctl -q -s list_vhosts name | while IFS= read -r name; do
+              keep=""
+              for database in $3; do
+                if [ "$name" = "$database" ] && [ "$name" != "$vhost" ]; then
+                  keep=1
+                fi
+              done
+              if [ -z "$keep" ]; then
+                rabbitmqctl -q delete_vhost "$name"
+              fi
+            done
+          else
+            rabbitmqctl -q delete_vhost "$vhost"
+          fi
           rabbitmqctl -q add_vhost "$vhost"
-          rabbitmqctl -q set_permissions -p "$vhost" "$user" ".*" ".*" ".*"
+          for user in $4; do
+            rabbitmqctl -q set_permissions -p "$vhost" "$user" ".*" ".*" ".*"
+          done
         - dokku-rabbitmq-reset
         - "{{ .Database }}"
-        - "{{ .ServiceName }}"
+        - "{{ .DefaultDatabase }}"
+        - "{{ .Args.databases }}"
+        - "{{ .Args.users }}"

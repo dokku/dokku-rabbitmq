@@ -20,11 +20,16 @@ sudo dokku plugin:install https://github.com/dokku/dokku-rabbitmq.git --name rab
 rabbitmq:app-links [<app>]                         # list all RabbitMQ service links for a given app
 rabbitmq:certificate <service>                     # print the certificate the RabbitMQ service encrypts connections with
 rabbitmq:create <service> [--create-flags...]      # create a RabbitMQ service
+rabbitmq:create-database <service> <database>      # create a database in the RabbitMQ service
+rabbitmq:create-user <service> <user> [<password>] # create a user in the RabbitMQ service
 rabbitmq:destroy <service> [-f|--force]            # delete the RabbitMQ service/data/container if there are no links left
+rabbitmq:destroy-database <service> <database> [-f|--force] # destroy a database created in the RabbitMQ service
+rabbitmq:destroy-user <service> <user> [-f|--force] # destroy a user created in the RabbitMQ service
 rabbitmq:enter <service>                           # enter or run a command in a running RabbitMQ service container
 rabbitmq:exists <service>                          # check if the RabbitMQ service exists
 rabbitmq:expose <service> <ports...>               # expose a RabbitMQ service on custom host:port if provided (random port on the 0.0.0.0 interface if otherwise unspecified)
 rabbitmq:info [<service>] [--info-flags...]        # print the service information
+rabbitmq:label <service> <key=value>...            # add docker labels to the service container
 rabbitmq:link <service> [<app>] [--link-flags...]  # link the RabbitMQ service to the app
 rabbitmq:linked <service> [<app>]                  # check if the RabbitMQ service is linked to an app
 rabbitmq:links <service>                           # list all apps linked to the RabbitMQ service
@@ -34,12 +39,14 @@ rabbitmq:mount [--replace] <service> <source:container-dir[:options]>... # mount
 rabbitmq:pause <service>                           # pause a running RabbitMQ service
 rabbitmq:promote <service> [<app>]                 # promote service <service> as RABBITMQ_URL in <app>
 rabbitmq:reexpose <service>                        # reexpose a RabbitMQ service, applying its expose settings
-rabbitmq:reset <service> [-f|--force]              # delete all data in the RabbitMQ service, keeping the service and its links
+rabbitmq:reset <service> [-f|--force] [--database <database>] # delete all data in the RabbitMQ service, keeping the service and its links
 rabbitmq:restart <service>                         # graceful shutdown and restart of the RabbitMQ service container
 rabbitmq:set <service> <key> [<value>] [--id <id>] # set or clear a property for a service
+rabbitmq:set-user-password <service> <user> [<password>] [-n|--no-restart] # change the password of a user created in the RabbitMQ service
 rabbitmq:start <service>                           # start a previously stopped RabbitMQ service
 rabbitmq:stop <service>                            # stop a running RabbitMQ service
 rabbitmq:unexpose <service>                        # unexpose a previously exposed RabbitMQ service
+rabbitmq:unlabel [--all] <service> [<key>...]      # remove one or all docker labels from the service container
 rabbitmq:unlink <service> [<app>] [-n|--no-restart] # unlink the RabbitMQ service from the app
 rabbitmq:unmount [--all] <service> [<source:container-dir>...] # remove one or all mounts from the service container
 rabbitmq:upgrade <service> [--upgrade-flags...]    # upgrade service <service> to the specified versions
@@ -60,12 +67,14 @@ dokku rabbitmq:create <service> [--create-flags...]
 
 flags:
 
+- `--backend <string>`: the execution backend to create the service with, docker or compose (default: docker)
 - `-c|--config-options <string>`: extra arguments for the process the service container runs, not docker flags; use mount for mounts
 - `-C|--custom-env <string>`: semi-colon delimited environment variables to start the service with
 - `--definition <string>`: the definition to run the service on, instead of the one its image and version resolve to
 - `-i|--image <string>`: the image name to start the service with
 - `-I|--image-version <string>`: the image version to start the service with
 - `-N|--initial-network <string>`: the initial network to attach the service to
+- `--label <stringArray>`: a docker label to put on the service container, as <key>=<value>, repeatable
 - `--log-driver <string>`: the docker logging driver to run the service container with (default: the daemon's own)
 - `--log-opt <strings>`: a comma-separated list of key=value docker log options for the service container
 - `-m|--memory <int>`: container memory limit in megabytes (default: unlimited)
@@ -89,9 +98,7 @@ dokku rabbitmq:create lollipop
 You can also specify the image and image version to use for the service. It *must* be compatible with the rabbitmq image.
 
 ```shell
-export RABBITMQ_IMAGE="rabbitmq"
-export RABBITMQ_IMAGE_VERSION="4.4.0-management"
-dokku rabbitmq:create lollipop
+dokku rabbitmq:create lollipop --image "rabbitmq" --image-version "4.4.0-management"
 ```
 
 An image other than rabbitmq has no version to fall back on, because the version this plugin pins belongs to rabbitmq, so name one alongside it.
@@ -103,8 +110,7 @@ dokku rabbitmq:create lollipop --image <image> --image-version <version>
 You can also specify custom environment variables to start the rabbitmq service in semicolon-separated form.
 
 ```shell
-export RABBITMQ_CUSTOM_ENV="USER=alpha;HOST=beta"
-dokku rabbitmq:create lollipop
+dokku rabbitmq:create lollipop --custom-env "USER=alpha;HOST=beta"
 ```
 
 The container log is bounded by whatever `dokku logs:set --global max-size` says, and by dokku's own default where it says nothing, which a service may override for itself.
@@ -119,7 +125,13 @@ The container is restarted by docker whenever it stops, which a service may chan
 dokku rabbitmq:create lollipop --restart unless-stopped
 ```
 
-The service is waited on until it answers, for as long as the datastore's own default, which a slow host may raise for every service with `RABBITMQ_WAIT_TIMEOUT` or a service may raise for itself.
+The container carries a docker label for each --label, which may be repeated, beyond the ones dokku puts on it. Keys starting with `dokku.` or `com.dokku.` are dokku's own and are refused.
+
+```shell
+dokku rabbitmq:create lollipop --label traefik.enable=true --label com.example.team=data
+```
+
+The service is waited on until it answers, for as long as the datastore's own default, which a slow host may raise for every service with `dokku rabbitmq:set --global wait-timeout` or a service may raise for itself.
 
 ```shell
 dokku rabbitmq:create lollipop --wait-timeout 120
@@ -134,7 +146,6 @@ dokku rabbitmq:create lollipop --volume /var/lib/dokku/data/storage/lollipop:/op
 The definition's own volumes can be mounted at another path in the container, for an image that keeps its data somewhere else, with --volume-target, which may be repeated.
 
 ```shell
-export RABBITMQ_VOLUME_TARGETS="data=/srv/rabbitmq"
 dokku rabbitmq:create lollipop --volume-target data=/srv/rabbitmq
 ```
 
@@ -197,6 +208,7 @@ flags:
 - `--custom-env`: show the custom environment the service container is run with
 - `--data-dir`: show the service data directory
 - `--database-name`: show the name of the database inside the service
+- `--databases`: show the databases an app can be linked to in the service, space separated
 - `--definition`: show the definition the service was created with
 - `--dsn`: show the service DSN
 - `--export-args`: show the extra arguments every export of the service is run with
@@ -210,6 +222,7 @@ flags:
 - `--import-args`: show the extra arguments every import into the service is run with
 - `--initial-network`: show the initial network being connected to
 - `--internal-ip`: show the service internal ip
+- `--labels`: show the docker labels the service container is made with beyond dokku's own, as a json object
 - `--links`: show the service app links
 - `--log-driver`: show the docker logging driver the service container is run with
 - `--log-opt`: show the docker log options the service container is run with
@@ -227,6 +240,7 @@ flags:
 - `--service-root`: show the service root directory
 - `--shm-size`: show the shared memory size the service container is run with
 - `--status`: show the service running status
+- `--users`: show the users an app can be linked as in the service, space separated
 - `--version`: show the service image version
 - `--volume-targets`: show the container paths the service's volumes are mounted at in place of the definition's
 - `--wait-timeout`: show the seconds the service is waited on to become ready
@@ -256,6 +270,8 @@ dokku rabbitmq:info lollipop --dsn
 dokku rabbitmq:info lollipop --status
 dokku rabbitmq:info lollipop --internal-ip
 dokku rabbitmq:info lollipop --initial-network
+dokku rabbitmq:info lollipop --databases
+dokku rabbitmq:info lollipop --users
 ```
 
 > NOTE: a flag cannot be combined with --format, and only one may be given
@@ -354,27 +370,18 @@ dokku rabbitmq:link <service> [<app>] [--link-flags...]
 flags:
 
 - `-a|--alias <string>`: the prefix of the config variable the service url is set as on the app, which is suffixed with _URL
+- `--database <string>`: the database in the service to link the app to, in place of the one named for the service
 - `-e|--env-var <string>`: the full name of the config variable the service url is set as on the app, used instead of an alias and not suffixed with _URL
 - `-n|--no-restart`: whether to skip restarting the app
 - `-q|--querystring <string>`: ampersand delimited querystring arguments to append to the service url after a ?
+- `--user <string>`: the user in the service to link the app as, in place of the one the service was created with
 
-A rabbitmq service can be linked to a container. This will use native docker links via the docker-options plugin. Here we link it to our `playground` app.
+A rabbitmq service can be linked to a container. The app and the service are put on a private docker network made for that link alone, so the app reaches the service as dokku-rabbitmq-lollipop, and two apps linked to the same service cannot reach each other through it. The app's running containers join it straight away, and the containers it is built, deployed and run in from then on join it when they are made. Here we link it to our `playground` app.
 
 > NOTE: this will restart your app
 
 ```shell
 dokku rabbitmq:link lollipop playground
-```
-
-The following environment variables will be set automatically by docker (not on the app itself, so they won’t be listed when calling dokku config):
-
-```
-DOKKU_RABBITMQ_LOLLIPOP_NAME=/lollipop/DATABASE
-DOKKU_RABBITMQ_LOLLIPOP_PORT=tcp://172.17.0.1:5672
-DOKKU_RABBITMQ_LOLLIPOP_PORT_5672_TCP=tcp://172.17.0.1:5672
-DOKKU_RABBITMQ_LOLLIPOP_PORT_5672_TCP_PROTO=tcp
-DOKKU_RABBITMQ_LOLLIPOP_PORT_5672_TCP_PORT=5672
-DOKKU_RABBITMQ_LOLLIPOP_PORT_5672_TCP_ADDR=172.17.0.1
 ```
 
 The following will be set on the linked application by default:
@@ -383,7 +390,11 @@ The following will be set on the linked application by default:
 RABBITMQ_URL=amqp://:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672
 ```
 
-The host exposed here only works internally in docker containers. If you want your container to be reachable from outside, you should use the `expose` subcommand. Another service can be linked to your app:
+The host exposed here only works internally in docker containers. If you want your container to be reachable from outside, you should use the `expose` subcommand. Earlier versions of the plugin linked an app with a docker link, which docker has deprecated, and which set `DOKKU_RABBITMQ_LOLLIPOP_PORT` style variables on the app's containers. Docker 29 no longer sets them, so an app reading them should read `RABBITMQ_URL` instead. Updating the plugin moves every linked app onto the network for its link, and the docker link is gone from each app's containers once they are restarted.
+
+> NOTE: every link uses a docker network of its own. docker's default address pools hold about 31 networks, so a server with many links may need a larger default-address-pools setting in /etc/docker/daemon.json.
+
+Another service can be linked to your app:
 
 ```shell
 dokku rabbitmq:link other_service playground
@@ -438,6 +449,20 @@ This will cause `RABBITMQ_URL` to be set as:
 amqp2://:SOME_PASSWORD@dokku-rabbitmq-lollipop:5672
 ```
 
+An app can be linked to a database made with create-database rather than the one named for the service with the `--database` flag:
+
+```shell
+dokku rabbitmq:link lollipop playground --database paintshop
+```
+
+An app can be linked as a user made with create-user rather than as the service's own with the `--user` flag, which can be combined with the `--database` flag:
+
+```shell
+dokku rabbitmq:link lollipop playground --user painter
+```
+
+The database and user a link was made on are recorded, so unlink, promote and a password change find the url they gave the app. An app that is already linked has to be unlinked and linked again to move it to another database or user.
+
 ### unlink the RabbitMQ service from the app
 
 ```shell
@@ -457,7 +482,7 @@ You can unlink a rabbitmq service:
 dokku rabbitmq:unlink lollipop playground
 ```
 
-An app is still linked after its `RABBITMQ_URL` is changed to point elsewhere, and is unlinked the same way. The variable it now holds is not the service's, so it is left alone, nothing is unset, the app is not restarted, and a warning says so. A variable link set that has only had its scheme or querystring changed still points at the service, and is unset.
+The network the link ran over is removed straight away, so the app's running containers can no longer reach the service, even with `--no-restart`. An app is still linked after its `RABBITMQ_URL` is changed to point elsewhere, and is unlinked the same way. The variable it now holds is not the service's, so it is left alone, nothing is unset, the app is not restarted, and a warning says so. A variable link set that has only had its scheme or querystring changed still points at the service, and is unset.
 
 ### set or clear a property for a service
 
@@ -469,6 +494,7 @@ dokku rabbitmq:set <service> <key> [<value>] [--id <id>]
 flags:
 
 - `--allow-restart`: restart or reexpose the service when the property only takes effect that way and its value changed
+- `--global`: set the property for every service of the datastore, taking <datastore-type> <key> [<value>] with no service name
 - `--id <string>`: record the property on this backup schedule instead of on the service
 - `--no-restart`: do not restart the linked apps when a password change updates the url they hold
 
@@ -717,6 +743,54 @@ dokku rabbitmq:unmount --all lollipop
 
 > NOTE: the mount is removed from the container the next time one is built. rabbitmq:restart keeps the container it has, so use rabbitmq:stop and then rabbitmq:start on a service that is already running.
 
+### add docker labels to the service container
+
+```shell
+# usage
+dokku rabbitmq:label <service> <key=value>...
+```
+
+Add a label to the service container:
+
+```shell
+dokku rabbitmq:label lollipop traefik.enable=true
+```
+
+Several may be given at once, and a value may hold commas and spaces:
+
+```shell
+dokku rabbitmq:label lollipop com.example.team=data "traefik.http.routers.lollipop.middlewares=auth,compress"
+```
+
+Labelling a key the service already has replaces its value. Keys starting with `dokku.` or `com.dokku.` are dokku's own and are refused.
+
+> NOTE: a label reaches the container the next time one is built. rabbitmq:restart keeps the container it has, so use rabbitmq:stop and then rabbitmq:start on a service that is already running.
+
+### remove one or all docker labels from the service container
+
+```shell
+# usage
+dokku rabbitmq:unlabel [--all] <service> [<key>...]
+```
+
+flags:
+
+- `--all`: remove every label the service has
+
+Remove a label, naming it by its key:
+
+```shell
+dokku rabbitmq:unlabel lollipop traefik.enable
+```
+
+Remove every label the service was given:
+
+```shell
+dokku rabbitmq:unlabel --all lollipop
+```
+
+> NOTE: the label is removed from the container the next time one is built. rabbitmq:restart keeps the container it has, so use rabbitmq:stop and then rabbitmq:start on a service that is already running.
+
 ### Service Lifecycle
 
 The lifecycle of each service can be managed through the following commands:
@@ -936,6 +1010,7 @@ flags:
 - `-i|--image <string>`: the image to upgrade the service to
 - `-I|--image-version <string>`: the image version to upgrade the service to
 - `-N|--initial-network <string>`: the initial network to attach the service to
+- `--label <stringArray>`: a docker label to put on the service container, as <key>=<value>, repeatable; replaces every label the service has
 - `--log-driver <string>`: the docker logging driver to run the service container with (default: the daemon's own)
 - `--log-opt <strings>`: a comma-separated list of key=value docker log options for the service container
 - `-m|--memory <int>`: container memory limit in megabytes, 0 for unlimited
@@ -1046,11 +1121,12 @@ The underlying service data can be imported and exported with the following comm
 
 ```shell
 # usage
-dokku rabbitmq:reset <service> [-f|--force]
+dokku rabbitmq:reset <service> [-f|--force] [--database <database>]
 ```
 
 flags:
 
+- `--database <string>`: the database in the service to reset, in place of the one named for the service
 - `-f|--force`: reset the service without asking for its name first
 
 Delete all data in the service, leaving it as empty as a newly created one. The service, its credentials, and the apps it is linked to are kept, so linked apps do not need to be relinked. Connections the apps hold open may be closed.
@@ -1063,6 +1139,141 @@ The service name is asked for before anything is deleted, unless --force is give
 
 ```shell
 dokku rabbitmq:reset lollipop --force
+```
+
+Only the database named for the service is reset unless another is named with --database, which resets a database made with create-database and leaves every other alone:
+
+```shell
+dokku rabbitmq:reset lollipop --database paintshop
+```
+
+### Databases and Users
+
+A service runs in a container of its own. Several apps can share one service, and the memory its container uses, by each being linked to a database or user of its own within it, made with the following commands. Every user made in a service can use every database in it.
+
+### create a database in the RabbitMQ service
+
+```shell
+# usage
+dokku rabbitmq:create-database <service> <database>
+```
+
+Create a database named `paintshop` in the running `lollipop` service, beside the one it was created with:
+
+```shell
+dokku rabbitmq:create-database lollipop paintshop
+```
+
+Every user the service holds is given access to it. A database name may only contain lowercase letters, digits and `_`, start with a letter or `_`, and be at most 32 characters long. Link an app to it with the `--database` flag:
+
+```shell
+dokku rabbitmq:link lollipop playground --database paintshop
+```
+
+### destroy a database created in the RabbitMQ service
+
+```shell
+# usage
+dokku rabbitmq:destroy-database <service> <database> [-f|--force]
+```
+
+flags:
+
+- `-f|--force`: destroy it without asking for confirmation
+
+Destroy the `paintshop` database made in the running `lollipop` service, along with all of its data:
+
+```shell
+dokku rabbitmq:destroy-database lollipop paintshop
+```
+
+The database name is asked for before anything is deleted, unless --force is given. A database an app is still linked to is refused, and the one the service was created with is only removed with the service.
+
+```shell
+dokku rabbitmq:destroy-database lollipop paintshop --force
+```
+
+### create a user in the RabbitMQ service
+
+```shell
+# usage
+dokku rabbitmq:create-user <service> <user> [<password>]
+```
+
+Create a user named `painter` in the running `lollipop` service, with a generated password:
+
+```shell
+dokku rabbitmq:create-user lollipop painter
+```
+
+The user is given access to every database the service holds, and to every database made in it later. A password of your own may be given instead. It may only contain letters, digits, `.`, `_`, `~` and `-`.
+
+```shell
+dokku rabbitmq:create-user lollipop painter SOME_PASSWORD
+```
+
+A user name may only contain lowercase letters, digits and `_`, start with a letter or `_`, and be at most 32 characters long. Link an app as the user with the `--user` flag, which hands it the password in its url:
+
+```shell
+dokku rabbitmq:link lollipop playground --user painter
+```
+
+### destroy a user created in the RabbitMQ service
+
+```shell
+# usage
+dokku rabbitmq:destroy-user <service> <user> [-f|--force]
+```
+
+flags:
+
+- `-f|--force`: destroy it without asking for confirmation
+
+Destroy the `painter` user made in the running `lollipop` service:
+
+```shell
+dokku rabbitmq:destroy-user lollipop painter
+```
+
+The user name is asked for before it is destroyed, unless --force is given. A user an app is still linked as is refused, and the one the service was created with is only removed with the service.
+
+```shell
+dokku rabbitmq:destroy-user lollipop painter --force
+```
+
+### change the password of a user created in the RabbitMQ service
+
+```shell
+# usage
+dokku rabbitmq:set-user-password <service> <user> [<password>] [-n|--no-restart]
+```
+
+flags:
+
+- `-n|--no-restart`: whether to skip restarting the apps linked as the user
+
+Give the `painter` user made in the running `lollipop` service a generated password:
+
+```shell
+dokku rabbitmq:set-user-password lollipop painter
+```
+
+Or a password of your own:
+
+```shell
+dokku rabbitmq:set-user-password lollipop painter SOME_PASSWORD
+```
+
+Every app linked as the user is given the new url and restarted, unless --no-restart is given, and the apps linked as any other user are left alone.
+
+```shell
+dokku rabbitmq:set-user-password lollipop painter --no-restart
+```
+
+The password of the user the service was created with is changed with set instead:
+
+```shell
+dokku rabbitmq:set lollipop password SOME_PASSWORD
 ```
 
 ### Custom Commands
@@ -1092,7 +1303,7 @@ dokku rabbitmq:certificate lollipop > server.crt
 
 ### Service properties
 
-Every setting a service has after it is created, other than its image, its mounts and its backup schedule, each of which has a command of its own, is changed with `dokku rabbitmq:set lollipop <key> <value>`, and cleared by giving no value. `dokku rabbitmq:info lollipop` reports each of them, with a credential reported as a fingerprint rather than its value. A setting the container is made with only reaches it once the container is built again, and `set` warns when that is the case: `dokku rabbitmq:restart` keeps the container the service has, so use `dokku rabbitmq:stop` and then `dokku rabbitmq:start`. Passing `--allow-restart` to `set` does that, or the `reexpose` an expose setting takes, whenever the value changed, and leaves the service alone when it did not.
+Every setting a service has after it is created, other than its image, its mounts, its labels and its backup schedule, each of which has a command of its own, is changed with `dokku rabbitmq:set lollipop <key> <value>`, and cleared by giving no value. `dokku rabbitmq:info lollipop` reports each of them, with a credential reported as a fingerprint rather than its value. A setting the container is made with only reaches it once the container is built again, and `set` warns when that is the case: `dokku rabbitmq:restart` keeps the container the service has, so use `dokku rabbitmq:stop` and then `dokku rabbitmq:start`. Passing `--allow-restart` to `set` does that, or the `reexpose` an expose setting takes, whenever the value changed, and leaves the service alone when it did not.
 
 | Property | Description | Takes effect |
 | --- | --- | --- |
@@ -1138,11 +1349,11 @@ A `port-source-range` cannot be enforced on a port the service container publish
 
 A service is waited on until it answers on its port after it is created, cloned, started, restarted, upgraded or exposed. If it takes longer than that to start - on a slow host, or with an image that does more on its first boot - the command fails with `ERROR: unable to connect`.
 
-To wait longer for every rabbitmq service on the host, set the `RABBITMQ_WAIT_TIMEOUT` environment variable to a number of seconds. To wait longer for a single service, set its `wait-timeout` property with `dokku rabbitmq:set` or pass `--wait-timeout` to `create`, `clone` or `upgrade`. The service's own setting is used first, then the environment variable, then the datastore's default.
+To wait longer for every rabbitmq service on the host, set the `wait-timeout` global property to a number of seconds with `dokku rabbitmq:set --global wait-timeout 120`. To wait longer for a single service, set its `wait-timeout` property with `dokku rabbitmq:set` or pass `--wait-timeout` to `create`, `clone` or `upgrade`. The service's own setting is used first, then the global property, then the datastore's default.
 
 ### Moving where a service's volumes are mounted
 
-Each volume a service mounts is named by the directory it lives in under the service's own directory, and is mounted where the datastore's definition says. To mount one somewhere else in the container, for an image that keeps its data at another path, set the service's `volume-targets` property with `dokku rabbitmq:set`, pass `--volume-target` to `create`, `clone` or `upgrade`, or set the `RABBITMQ_VOLUME_TARGETS` environment variable before `create`. Each is written as `<volume>=<container-path>`, several separated by spaces, and `dokku rabbitmq:info lollipop --volume-targets` shows the ones a service moved.
+Each volume a service mounts is named by the directory it lives in under the service's own directory, and is mounted where the datastore's definition says. To mount one somewhere else in the container, for an image that keeps its data at another path, set the service's `volume-targets` property with `dokku rabbitmq:set`, or pass `--volume-target` to `create`, `clone` or `upgrade`. Each is written as `<volume>=<container-path>`, several separated by spaces, and `dokku rabbitmq:info lollipop --volume-targets` shows the ones a service moved.
 
 | Definition | Volume | Mounted at |
 | --- | --- | --- |
@@ -1194,6 +1405,6 @@ The settings that turn tls on are kept in `/var/lib/dokku/services/rabbitmq/loll
 
 ### Disabling `docker image pull` calls
 
-If you wish to disable the `docker image pull` calls that the plugin triggers, you may set the `RABBITMQ_DISABLE_PULL` environment variable to `true`. Once disabled, you will need to pull the service image you wish to deploy as shown in the `stderr` output.
+If you wish to disable the `docker image pull` calls that the plugin triggers, you may set the `disable-pull` global property to `true` with `dokku rabbitmq:set --global disable-pull true`. Once disabled, you will need to pull the service image you wish to deploy as shown in the `stderr` output.
 
 Please ensure the proper images are in place when `docker image pull` is disabled.
